@@ -10,9 +10,9 @@ export interface UserData {
   codigo: string;
   nombres: string;
   apellidos: string;
-  id_rol: number | null; // <--- Nuevo campo agregado
+  id_rol: number[]; // <--- Nuevo campo agregado
   roles_ids: number[]; // <--- Nuevo campo agregado para múltiples roles
-  person?: any; 
+  person?: any;
   correo?: string;
   foto?: string;
 }
@@ -30,42 +30,51 @@ export class UserService {
   /**
    * Extrae la información del usuario e id_rol directamente del JWT.
    */
+  // src/app/core/services/user.service.ts
+
   private loadUserFromToken(): void {
-    const token = localStorage.getItem('code5-access-token'); 
-    
+    const token = localStorage.getItem('code5-access-token');
     if (!token) return;
 
     try {
       const payload: any = jwtDecode(token);
-      
+      const rolesArray = payload.roles_ids || [];
+
       const userData: UserData = {
-        // AGREGAR ESTA LÍNEA: Capturamos el 'sub' del token como id_persona
-        id_persona: Number(payload.sub), 
+        id_persona: Number(payload.sub),
         codigo: payload.codigo || '',
-        id_rol: payload.id_rol || null, 
-        roles_ids: payload.roles_ids || [], // Capturamos el array si existe
+        // CAMBIO: Asignamos el arreglo completo directamente
+        id_rol: payload.id_rol || rolesArray,
+        roles_ids: rolesArray,
         nombres: payload.person?.nombre || '',
-        apellidos: `${payload.person?.paterno || ''} ${payload.person?.materno || ''}`.trim(),
-        person: payload.person, 
-        correo: payload.correo
+        apellidos:
+          `${payload.person?.paterno || ''} ${payload.person?.materno || ''}`.trim(),
+        person: payload.person,
+        correo: payload.correo,
       };
 
       this.userSubject.next(userData);
-      console.log('Usuario cargado con ID:', userData.id_persona);
+      console.log('Usuario cargado con IDs de Roles:', userData.id_rol);
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
   }
 
   fetchUserProfile(): Observable<UserData | null> {
-    return this.http.get<{success: boolean, user: UserData}>(`${environment.apiUrl.global}/api/config/auth/me`)
+    return this.http
+      .get<{
+        success: boolean;
+        user: UserData;
+      }>(`${environment.apiUrl.global}/api/config/auth/me`)
       .pipe(
-        map(res => res.user),
-        tap(user => this.userSubject.next(user)),
+        map((res) => res.user),
+        tap((user) => this.userSubject.next(user)),
         catchError((err) => {
-          console.warn('Backend /me falló (500), se mantienen datos del token local.');
-          return of(this.userSubject.value); 
-        })
+          console.warn(
+            'Backend /me falló (500), se mantienen datos del token local.',
+          );
+          return of(this.userSubject.value);
+        }),
       );
   }
 
