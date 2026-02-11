@@ -1,0 +1,49 @@
+/* ===== Variables del layout ===== */
+:host{
+  --topbar-h: 70px;
+  --sidebar-w: 240px;              /* ancho abierto */
+  --sidebar-w-collapsed: 64px;     /* ancho colapsado (icon-only) */
+}
+
+/* Al colapsar, solo cambiamos la variable: el grid se adapta */
+.main-grid.collapsed{ --sidebar-w: var(--sidebar-w-collapsed); }
+
+/* ===== Grid maestro (header va afuera, así que solo 1 fila de contenido) ===== */
+.main-grid{
+  display:grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: calc(100vh - var(--topbar-h));
+  background:#edf0f3;
+}
+
+/* ===== Sidebar ===== */
+.sidebar-cell{
+  grid-column:1;
+  position:relative;
+  z-index: var(--z-sidebar, 100);
+}
+
+/* Sidebar pegado bajo el topbar */
+.sidebar-cell > app-sidebar{
+  position:sticky;
+  top: var(--topbar-h);
+  display:block;
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden; /* evita que el contenido se desborde al colapsar */
+}
+
+/* ===== Content ===== */
+.content-cell{
+  grid-column:2;
+  z-index: var(--z-content, 10);
+  min-width:0; /* evita overflow en grid */
+  background:#edf0f3;
+  padding:20px;
+  overflow:auto;
+}
+
+/* Responsive */
+@media (max-width: 768px){
+  :host{ --sidebar-w: var(--sidebar-w-collapsed); }
+  .content-cell{ padding:16px 10px; }
+}

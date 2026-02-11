@@ -1,0 +1,160 @@
+<div class="ptp" role="dialog" aria-modal="true" [attr.aria-busy]="loading || saving">
+  <div class="head">
+    <h3>{{ titulo }}</h3>
+    <button class="btn-close" (click)="requestClose()" aria-label="Cerrar">×</button>
+  </div>
+
+  <div class="body">
+    <!-- Encabezado -->
+    <div class="hdr grid">
+      <span class="th left">Módulo</span>
+      <span class="th center">Crear</span>
+      <span class="th center">Listar</span>
+      <span class="th center">Editar</span>
+      <span class="th center">Eliminar</span>
+    </div>
+
+    <!-- Árbol -->
+    <ul class="tree root" *ngIf="!error">
+      <ng-container *ngFor="let n of tree; trackBy: trackById">
+        <li class="ti">
+          <div class="row grid">
+            <!-- Columna de módulo + botón + -->
+            <div class="name-cell">
+              <span class="name">{{ n.nombre }}</span>
+
+              <button
+                type="button"
+                class="mini-btn"
+                (click)="createCrudForNode(n)"
+                [disabled]="saving || loading"
+                title="Crear privilegios CRUD para este módulo"
+              >
+                <span class="mini-icon">+</span>
+              </button>
+            </div>
+
+            <label class="chk">
+              <input
+                type="checkbox"
+                [ngModel]="(flagsById.get(n.id_modulo)?.crear)||false"
+                (ngModelChange)="toggle(n.id_modulo,'crear',$event)"
+                [disabled]="saving" />
+              <span></span>
+            </label>
+
+            <label class="chk">
+              <input
+                type="checkbox"
+                [ngModel]="(flagsById.get(n.id_modulo)?.listar)||false"
+                (ngModelChange)="toggle(n.id_modulo,'listar',$event)"
+                [disabled]="saving" />
+              <span></span>
+            </label>
+
+            <label class="chk">
+              <input
+                type="checkbox"
+                [ngModel]="(flagsById.get(n.id_modulo)?.editar)||false"
+                (ngModelChange)="toggle(n.id_modulo,'editar',$event)"
+                [disabled]="saving" />
+              <span></span>
+            </label>
+
+            <label class="chk">
+              <input
+                type="checkbox"
+                [ngModel]="(flagsById.get(n.id_modulo)?.eliminar)||false"
+                (ngModelChange)="toggle(n.id_modulo,'eliminar',$event)"
+                [disabled]="saving" />
+              <span></span>
+            </label>
+          </div>
+
+          <ul class="branch" *ngIf="n.children && n.children.length">
+            <ng-container
+              *ngTemplateOutlet="nodeTpl; context: {$implicit: n.children}">
+            </ng-container>
+          </ul>
+        </li>
+      </ng-container>
+    </ul>
+
+    <div *ngIf="error" class="error">{{ error }}</div>
+  </div>
+
+  <div class="foot">
+    <button class="btn" (click)="requestClose()" [disabled]="saving">
+      Cancelar
+    </button>
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving || loading">
+      Guardar Cambios
+    </button>
+  </div>
+</div>
+
+<!-- ===== plantilla recursiva ===== -->
+<ng-template #nodeTpl let-list>
+  <ng-container *ngFor="let c of list; trackBy: trackById">
+    <li class="ti">
+      <div class="row grid">
+        <!-- Columna de módulo + botón + -->
+        <div class="name-cell">
+          <span class="name">{{ c.nombre }}</span>
+
+          <button
+            type="button"
+            class="mini-btn"
+            (click)="createCrudForNode(c)"
+            [disabled]="saving || loading"
+            title="Crear privilegios CRUD para este módulo"
+          >
+            <span class="mini-icon">+</span>
+          </button>
+        </div>
+
+        <label class="chk">
+          <input
+            type="checkbox"
+            [ngModel]="(flagsById.get(c.id_modulo)?.crear)||false"
+            (ngModelChange)="toggle(c.id_modulo,'crear',$event)"
+            [disabled]="saving" />
+          <span></span>
+        </label>
+
+        <label class="chk">
+          <input
+            type="checkbox"
+            [ngModel]="(flagsById.get(c.id_modulo)?.listar)||false"
+            (ngModelChange)="toggle(c.id_modulo,'listar',$event)"
+            [disabled]="saving" />
+          <span></span>
+        </label>
+
+        <label class="chk">
+          <input
+            type="checkbox"
+            [ngModel]="(flagsById.get(c.id_modulo)?.editar)||false"
+            (ngModelChange)="toggle(c.id_modulo,'editar',$event)"
+            [disabled]="saving" />
+          <span></span>
+        </label>
+
+        <label class="chk">
+          <input
+            type="checkbox"
+            [ngModel]="(flagsById.get(c.id_modulo)?.eliminar)||false"
+            (ngModelChange)="toggle(c.id_modulo,'eliminar',$event)"
+            [disabled]="saving" />
+          <span></span>
+        </label>
+      </div>
+
+      <ul class="branch" *ngIf="c.children && c.children.length">
+        <ng-container
+          *ngTemplateOutlet="nodeTpl; context: {$implicit: c.children}">
+        </ng-container>
+      </ul>
+    </li>
+  </ng-container>
+</ng-template>

@@ -1,0 +1,46 @@
+:host {
+  display: contents;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  /* Fondo institucional suave */
+  background: rgba(15, 45, 82, 0.12);
+
+  animation: fadeIn 0.15s ease-out both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Spinner sobrio tipo UPeU */
+.loader {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid rgba(15, 45, 82, 0.2);
+  border-top-color: var(--accent, #0F2D52);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f2d52;
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}

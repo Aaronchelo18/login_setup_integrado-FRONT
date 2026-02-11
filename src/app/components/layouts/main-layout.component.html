@@ -1,0 +1,12 @@
+<app-header class="topbar" (toggle)="toggleSidebar()"></app-header>
+
+<!-- Cuando está colapsado, aplico la clase para propagar estilos al Sidebar -->
+<div class="main-grid" [class.collapsed]="!isSidebarVisible">
+  <aside class="sidebar-cell">
+    <app-sidebar [collapsed]="!isSidebarVisible"></app-sidebar>
+  </aside>
+
+  <main class="content-cell">
+    <router-outlet></router-outlet>
+  </main>
+</div>

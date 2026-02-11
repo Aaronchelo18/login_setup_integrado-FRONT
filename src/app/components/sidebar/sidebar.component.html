@@ -1,0 +1,66 @@
+<aside class="sidebar">
+  <!-- Título -->
+  <div class="menu-title">SISTEMA DE ACCESOS</div>
+  <div class="divider title"></div>
+
+  <!-- Lista dinámica desde BD -->
+  <ul class="menu-list">
+    <li *ngFor="let m of padres" class="parent">
+
+      <a
+        [routerLink]="m.children?.length ? null : normalizeUrl(m.url)"
+        (click)="onParentClick(m, $event)"
+        [class.has-children]="m.children?.length"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+
+        <span class="active-indicator"></span>
+
+        <!-- ICONO PADRE -->
+        <span class="icon-wrap">
+          <ng-container [ngSwitch]="iconType(m.imagen)">
+            <iconify-icon *ngSwitchCase="'iconify'" [icon]="m.imagen" width="18" height="18"></iconify-icon>
+            <img *ngSwitchCase="'img'" [src]="iconUrl(m.imagen)" alt="" width="18" height="18" loading="lazy" />
+            <i *ngSwitchDefault class="fa-regular fa-folder"></i>
+          </ng-container>
+        </span>
+
+        <span class="label">{{ m.nombre }}</span>
+
+        <i *ngIf="m.children?.length"
+           class="chevron fa-solid"
+           [ngClass]="isOpen(m.id_modulo) ? 'fa-chevron-down open' : 'fa-chevron-right'"></i>
+      </a>
+
+      <!-- separador solo cuando está expandido y abierto -->
+      <div *ngIf="m.children?.length && isOpen(m.id_modulo) && !collapsed" class="divider soft"></div>
+
+      <!-- SUBMENÚ: visible solo si el padre está abierto (sea expandido o colapsado) -->
+      <ul *ngIf="m.children?.length && isOpen(m.id_modulo)" class="submenu">
+        <li *ngFor="let h of m.children" class="child">
+          <a
+            [routerLink]="isModulosName(h.nombre) ? ['/setup','modulos'] : linkForChild(m, h)"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="onChildClick(h, $event)">
+
+            <span class="active-indicator"></span>
+
+            <!-- ICONO HIJO -->
+            <span class="icon-wrap">
+              <ng-container [ngSwitch]="iconType(h.imagen)">
+                <iconify-icon *ngSwitchCase="'iconify'" [icon]="h.imagen" width="16" height="16"></iconify-icon>
+                <img *ngSwitchCase="'img'" [src]="iconUrl(h.imagen)" alt="" width="16" height="16" loading="lazy" />
+                <i *ngSwitchDefault class="fa-regular fa-file-lines"></i>
+              </ng-container>
+            </span>
+
+            <span class="label">{{ h.nombre }}</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="divider group"></div>
+    </li>
+  </ul>
+</aside>

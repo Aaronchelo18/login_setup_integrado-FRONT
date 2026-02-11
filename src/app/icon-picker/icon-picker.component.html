@@ -1,0 +1,103 @@
+<div class="ip-overlay" (click)="close.emit()"></div>
+
+<div class="ip-panel" (click)="$event.stopPropagation()">
+  <header class="ip-header">
+    <div class="header-content">
+      <iconify-icon icon="lucide:search-code" class="header-icon"></iconify-icon>
+      <div>
+        <h4>Explorador de Íconos</h4>
+        <p>Busca y selecciona un identificador visual</p>
+      </div>
+    </div>
+    <button class="ip-close" (click)="close.emit()" aria-label="Cerrar">
+      <iconify-icon icon="lucide:x"></iconify-icon>
+    </button>
+  </header>
+
+  <div class="ip-search-area">
+    <div class="input-group">
+      <iconify-icon icon="lucide:search" class="search-icon"></iconify-icon>
+      <input
+        [(ngModel)]="q"
+        (input)="onType()"
+        placeholder="Buscar: settings, user, money..."
+        aria-label="Buscar icono">
+    </div>
+    
+    <div class="select-group">
+      <iconify-icon icon="lucide:library" class="select-icon"></iconify-icon>
+      <select [(ngModel)]="prefixes" (change)="search()">
+        <option value="eva,mdi,tabler,heroicons-outline,lucide,material-symbols">Todos los packs</option>
+        <option value="lucide">Lucide Icons</option>
+        <option value="material-symbols">Material Symbols</option>
+        <option value="tabler">Tabler Icons</option>
+        <option value="mdi">Material Design</option>
+        <option value="eva">Eva Icons</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="ip-chips">
+    <button class="chip" *ngFor="let c of quickChips" (click)="applyChip(c)">
+      <span>{{ c.es }}</span>
+    </button>
+  </div>
+
+  <div class="ip-body custom-scroll">
+    <div *ngIf="loading" class="ip-loading-state">
+      <div class="spinner"></div>
+      <p>Sincronizando con la librería...</p>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <div class="results-container" *ngIf="results.length; else emptyState">
+        <div class="ip-grid">
+          <button class="ip-item" *ngFor="let it of results" (click)="select(it.icon)" [title]="it.icon">
+            <div class="icon-box">
+              <iconify-icon [attr.icon]="it.icon"></iconify-icon>
+            </div>
+            <span class="icon-name">{{ it.icon.split(':').pop() }}</span>
+          </button>
+        </div>
+      </div>
+
+      <ng-template #emptyState>
+        <div class="default-view" *ngIf="!q.trim()">
+          <section class="ip-sect" *ngIf="recent.length">
+            <div class="ip-sect-head">
+              <h5><iconify-icon icon="lucide:history"></iconify-icon> Usados recientemente</h5>
+              <button class="btn-clear" (click)="clearRecent()">Limpiar historial</button>
+            </div>
+            <div class="ip-grid mini">
+              <button class="ip-item" *ngFor="let r of recent" (click)="select(r)">
+                <div class="icon-box">
+                  <iconify-icon [attr.icon]="r"></iconify-icon>
+                </div>
+              </button>
+            </div>
+          </section>
+
+          <section class="ip-sect" *ngFor="let cat of featured">
+            <div class="ip-sect-head">
+              <h5>{{ cat.title }}</h5>
+            </div>
+            <div class="ip-grid">
+              <button class="ip-item" *ngFor="let ic of cat.icons" (click)="select(ic)">
+                <div class="icon-box">
+                  <iconify-icon [attr.icon]="ic"></iconify-icon>
+                </div>
+                <span class="icon-name">{{ ic.split(':').pop() }}</span>
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <div class="ip-no-results" *ngIf="q.trim() && !results.length">
+          <iconify-icon icon="lucide:search-x"></iconify-icon>
+          <p>No encontramos iconos para "<strong>{{q}}</strong>"</p>
+          <span>Intenta con términos más generales en inglés.</span>
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+</div>

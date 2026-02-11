@@ -1,0 +1,284 @@
+/* ---- CONTENEDOR MODAL ---- */
+.ptp {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(16, 24, 40, .22);
+  width: 900px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e6e8eb;
+}
+
+.head h3 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.btn-close {
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 8px;
+  color: #64748b;
+}
+
+.body {
+  padding: 6px 8px 10px;
+  overflow: auto;
+}
+
+.foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #e6e8eb;
+}
+
+.btn {
+  border: 1px solid #cfd3d7;
+  background: #f5f6f7;
+  border-radius: 10px;
+  height: 40px;
+  padding: 0 14px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: #1f2c44;
+  color: #fff;
+  border-color: #1f2c44;
+}
+
+.btn-primary:hover {
+  background: #45484d;
+}
+
+.error {
+  color: #b42318;
+  background: #fdecec;
+  border: 1px solid #f4c7c7;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin: 8px;
+}
+
+/* ---- GRILLA: 1 COLUMNA NOMBRE + 4 DE CHECKS ---- */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr repeat(4, 110px);
+  gap: 8px;
+  align-items: center;
+}
+
+/* Encabezado */
+.hdr {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-bottom: 1px solid #f0f2f4;
+  padding: 10px 10px 8px;
+  z-index: 2;
+}
+
+.hdr .th {
+  font-weight: 700;
+  color: #1f2c44;
+}
+
+.hdr .th.center {
+  text-align: center;
+}
+
+.hdr .th.left {
+  text-align: left;
+}
+
+/* ---- ÁRBOL ---- */
+.tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.root {
+  padding: 6px 4px;
+}
+
+.ti {
+  position: relative;
+  margin: 0;
+  padding-left: 0;
+}
+
+.row {
+  padding: 6px 10px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.row:hover {
+  background: #f8fafc;
+}
+
+/* Columna de módulo: nombre + botón + */
+.name-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0; /* para que el ellipsis funcione */
+}
+
+.name {
+  flex: 1;
+  font-weight: 600;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Líneas del árbol */
+.branch {
+  list-style: none;
+  margin: 0;
+  padding-left: 22px;
+  position: relative;
+}
+
+.branch::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e5e7eb;
+}
+
+.ti::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: #e5e7eb;
+}
+
+.ti:last-child::before {
+  height: 14px;
+}
+
+.row::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 50%;
+  width: 14px;
+  height: 1px;
+  background: #e5e7eb;
+  transform: translateY(-50%);
+}
+
+/* ---- CHECKBOXES ---- */
+.chk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  width: 100%;
+}
+
+.chk input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.chk span {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  transition: border-color .18s, background-color .18s, box-shadow .18s;
+}
+
+.chk input:hover + span {
+  border-color: #94a3b8;
+}
+
+.chk input:focus-visible + span {
+  outline: 3px solid rgba(37, 99, 235, .28);
+  outline-offset: 2px;
+}
+
+.chk input:checked + span {
+  background: #2563eb;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, .12);
+}
+
+.chk input:checked + span::after {
+  content: "";
+  position: relative;
+  display: block;
+  width: 10px;
+  height: 6px;
+  border: 2px solid #fff;
+  border-top: 0;
+  border-right: 0;
+  transform: translate(4px, 5px) rotate(-45deg);
+}
+
+/* ---- BOTÓN + (mini acción) ---- */
+.mini-btn {
+  border: 0;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease,
+              box-shadow 0.15s ease,
+              transform 0.08s ease;
+}
+
+.mini-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  box-shadow: 0 0 0 1px #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.mini-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.mini-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  box-shadow: none;
+}
+
+.mini-icon {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}

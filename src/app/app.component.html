@@ -1,0 +1,6 @@
+<app-loading-overlay
+  [show]="!!(isLoading$ | async)"
+  [label]="(loaderLabel$ | async) || 'Cargando...'"
+></app-loading-overlay>
+
+<router-outlet></router-outlet>

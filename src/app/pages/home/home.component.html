@@ -1,0 +1,65 @@
+<div class="dashboard-wrapper">
+  <header class="page-header">
+    <nav class="breadcrumb">Gestión de accesos / Dashboard</nav>
+    <div class="header-main">
+      <div class="title-group">
+        <button class="btn-exit" (click)="goToShell()" title="Regresar al Portal Principal">
+          <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
+        </button>
+        <h1>Panel de Control</h1>
+      </div>
+      <p class="subtitle">Bienvenido al sistema de administración centralizada.</p>
+    </div>
+  </header>
+
+  <section class="metrics-grid">
+    <div *ngFor="let kpi of kpis" class="metric-card">
+      <div class="metric-icon" [ngClass]="kpi.color">
+        <span class="material-symbols-rounded">{{ kpi.icon }}</span>
+      </div>
+      <span class="metric-label">{{ kpi.label }}</span>
+      <h2 class="metric-value">{{ kpi.value }}</h2>
+    </div>
+  </section>
+
+  <h3 class="section-title">Acciones de configuración</h3>
+  <section class="actions-grid">
+    <button class="action-btn" [routerLink]="['/setup','modulos']">
+      <iconify-icon icon="lucide:grid-3x3" class="btn-icon"></iconify-icon>
+      <span>Gestionar Módulos</span>
+    </button>
+
+    <button class="action-btn" [routerLink]="['/setup','roles']">
+      <iconify-icon icon="lucide:shield" class="btn-icon"></iconify-icon>
+      <span>Administrar Roles</span>
+    </button>
+
+    <button class="action-btn" [routerLink]="['/setup','rol-acceso']">
+      <iconify-icon icon="lucide:key" class="btn-icon"></iconify-icon>
+      <span>Asignar Accesos</span>
+    </button>
+
+    <button class="action-btn" [routerLink]="['/setup','accesos']">
+      <iconify-icon icon="lucide:users" class="btn-icon"></iconify-icon>
+      <span>Asignar Usuarios</span>
+    </button>
+  </section>
+
+  <div class="section-header">
+    <h3 class="section-title" style="margin-bottom: 0;">Actividad Reciente</h3>
+    <a class="view-all">Ver todo el historial</a>
+  </div>
+  
+  <section class="activity-card">
+    <div class="activity-list">
+      <div *ngFor="let item of activity" class="activity-item">
+        <div class="marker"></div>
+        <div class="activity-info">
+          <p class="title">{{ item.title }}</p>
+          <p class="desc">{{ item.desc }}</p>
+        </div>
+        <span class="time">{{ item.time }}</span>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,159 @@
+<div class="mod-page">
+  <header class="mod-header">
+    <div class="header-titles">
+      <nav class="breadcrumb">Sistema de Accesos / Configuración</nav>
+      
+      <div class="title-container">
+        <button class="btn-back" (click)="goBack()" title="Volver al panel principal">
+          <iconify-icon icon="lucide:arrow-left"></iconify-icon>
+        </button>
+        <h1>Gestión de Módulos</h1>
+      </div>
+
+      <p>Administre las aplicaciones y la estructura jerárquica del ecosistema.</p>
+    </div>
+
+    <button class="btn-create" (click)="openCreateModal()">
+      <iconify-icon icon="lucide:plus" class="btn-icon"></iconify-icon>
+      <span>Nuevo Módulo</span>
+    </button>
+  </header>
+
+  <div *ngIf="error" class="error-banner">
+    <iconify-icon icon="lucide:alert-circle"></iconify-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <div class="mod-grid">
+    <article
+      class="mod-card"
+      *ngFor="let m of cards; trackBy: trackById"
+      [class.is-disabled]="m.estado == '0'"
+    >
+      <div class="card-accent"></div>
+
+      <div class="card-inner">
+        <div class="card-main-info">
+          <div class="icon-container">
+            <ng-container [ngSwitch]="iconType(m.imagen)">
+              <iconify-icon
+                *ngSwitchCase="'iconify'"
+                [icon]="m.imagen"
+              ></iconify-icon>
+              <img
+                *ngSwitchCase="'img'"
+                [src]="iconUrl(m.imagen)"
+                alt="icono"
+              />
+              <span *ngSwitchDefault class="letter-icon">{{
+                firstLetter(m.nombre)
+              }}</span>
+            </ng-container>
+          </div>
+
+          <div class="text-content">
+            <div class="title-row">
+              <h3 class="module-name">{{ m.nombre }}</h3>
+              <span class="status-badge" [class.inactive]="m.estado == '0'">
+                {{ m.estado == "1" ? "Activo" : "Inactivo" }}
+              </span>
+            </div>
+            <code class="module-url">{{ m.url || "Sin ruta asignada" }}</code>
+          </div>
+
+          <button
+            class="delete-trigger"
+            title="Eliminar Módulo"
+            (click)="onDelete(m)"
+          >
+            <iconify-icon icon="lucide:trash-2"></iconify-icon>
+          </button>
+        </div>
+
+        <div class="action-divider"></div>
+
+        <div class="card-footer">
+          <div class="quick-tools">
+            <button
+              class="tool-btn"
+              (click)="openEditModal(m)"
+              title="Editar información"
+            >
+              <iconify-icon icon="lucide:edit-3"></iconify-icon>
+            </button>
+            <button
+              class="tool-btn"
+              (click)="openHierarchy(m)"
+              title="Estructura Jerárquica"
+            >
+              <iconify-icon icon="lucide:git-branch"></iconify-icon>
+            </button>
+            <button class="tool-btn" title="Configuración avanzada">
+              <iconify-icon icon="lucide:settings"></iconify-icon>
+            </button>
+          </div>
+
+          <button class="btn-privileges" (click)="openPrivileges(m)">
+            <span>Gestionar Privilegios</span>
+            <iconify-icon icon="lucide:chevron-right"></iconify-icon>
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="modal-wrapper" *ngIf="showPriv || openCreate || openEdit || openHier">
+    <div class="modal-backdrop" (click)="closePriv(); closeCreateModal(); closeEditModal(); closeHierarchy()"></div>
+
+    <div class="modal-content" [class.active]="showPriv">
+      <app-privileges-tree-panel
+        *ngIf="showPriv && selectedMod"
+        [parentId]="selectedMod!.id_modulo"
+        [titulo]="'Privilegios: ' + selectedMod!.nombre"
+        (closed)="closePriv()"
+        (saved)="refreshAfterSave()"
+      ></app-privileges-tree-panel>
+    </div>
+
+    <div class="modal-content" [class.active]="openCreate">
+      <app-module-modulo-form-dialog
+        *ngIf="openCreate"
+        [open]="openCreate"
+        [modules]="parentOptions"
+        [loading]="loadingParents"
+        [creating]="creating"
+        mode="create"
+        (onDemandParents)="fetchParents()"
+        (close)="closeCreateModal()"
+        (submit)="onCreateSubmit($event)"
+      >
+      </app-module-modulo-form-dialog>
+    </div>
+
+    <div class="modal-content" [class.active]="openEdit">
+      <app-module-modulo-form-dialog
+        *ngIf="openEdit"
+        [open]="openEdit"
+        [modules]="parentOptions"
+        [loading]="loadingParents"
+        [creating]="editing"
+        mode="edit"
+        [initial]="selectedMod"
+        (onDemandParents)="fetchParents()"
+        (close)="closeEditModal()"
+        (submit)="onEditSubmit($event)"
+      >
+      </app-module-modulo-form-dialog>
+    </div>
+
+    <div class="modal-content" [class.active]="openHier">
+      <app-modules-hierarchy-modal
+        *ngIf="openHier && selectedMod"
+        [rootId]="selectedMod!.id_modulo"
+        [titulo]="selectedMod!.nombre"
+        (closed)="closeHierarchy()"
+        (saved)="onHierarchySaved()"
+      ></app-modules-hierarchy-modal>
+    </div>
+  </div>
+</div>

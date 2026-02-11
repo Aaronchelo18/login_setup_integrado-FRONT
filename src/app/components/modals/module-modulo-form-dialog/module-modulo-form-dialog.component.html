@@ -1,0 +1,122 @@
+<div class="dlg-overlay" *ngIf="open" (click)="onCancel()">
+  <div class="dlg-card" role="dialog" (click)="$event.stopPropagation()">
+    
+    <header class="dlg-head">
+      <div class="head-content">
+        <h3>{{ mode === 'create' ? 'Crear Módulo' : 'Editar Módulo' }}</h3>
+        <p class="head-subtitle">Define la posición jerárquica y estética del acceso.</p>
+      </div>
+      <button type="button" class="dlg-close" (click)="onCancel()">
+        <iconify-icon icon="heroicons:x-mark-20-solid"></iconify-icon>
+      </button>
+    </header>
+
+    <form class="dlg-form-body" [formGroup]="form" (ngSubmit)="onSave()">
+      <div class="form-grid">
+        
+        <div class="field full-width">
+          <label class="label">Nombre del Módulo <span class="req">*</span></label>
+          <div class="input-container">
+            <iconify-icon icon="heroicons:pencil-square" class="inner-icon"></iconify-icon>
+            <input class="input-control" type="text" placeholder="Ej.: GESTIÓN DE APLICACIONES" formControlName="nombre" />
+            <span class="counter">{{ form.get('nombre')?.value?.length || 0 }}/120</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Nivel de Profundidad</label>
+          <div class="input-container">
+            <iconify-icon icon="heroicons:bars-3-bottom-left" class="inner-icon"></iconify-icon>
+            <select class="input-control select-type" formControlName="nivel">
+              <option *ngFor="let n of niveles" [value]="n.value">{{ n.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Módulo Superior (Padre)</label>
+          <div class="input-container">
+            <iconify-icon icon="heroicons:folder-open" class="inner-icon"></iconify-icon>
+            
+            <select 
+              class="input-control select-type hierarchy-dropdown" 
+              formControlName="id_parent"
+              (focus)="onFocusSelect()">
+              
+              <ng-container *ngIf="loading; else dataLoaded">
+                <option [ngValue]="null" disabled selected>Cargando módulos...</option>
+              </ng-container>
+
+              <ng-template #dataLoaded>
+                <option [ngValue]="null" *ngIf="form.get('nivel')?.value == 0">Establecer como Raíz</option>
+                <option [ngValue]="null" *ngIf="form.get('nivel')?.value != 0" disabled>-- Seleccione el Padre --</option>
+                
+                <option *ngFor="let m of filteredModules" 
+                        [ngValue]="m.id_modulo" 
+                        [class]="'lv-' + m.nivel">
+                  {{ formatPath(m) }}
+                </option>
+              </ng-template>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Ruta de Acceso (URL)</label>
+          <div class="input-container prefix-box">
+            <span class="prefix">/</span>
+            <input class="input-control has-prefix" type="text" placeholder="setup/gapp/dashboard" formControlName="url" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Visibilidad</label>
+          <div class="toggle-group">
+            <label class="toggle-item">
+              <input type="radio" value="1" formControlName="estado">
+              <span class="toggle-btn active">Activo</span>
+            </label>
+            <label class="toggle-item">
+              <input type="radio" value="0" formControlName="estado">
+              <span class="toggle-btn inactive">Inactivo</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field full-width">
+          <label class="label">Apariencia Visual</label>
+          <div class="icon-card-preview">
+            <div class="icon-box">
+              <ng-container *ngIf="isImg(form.get('imagen')?.value); else iconify">
+                <img [src]="iconPreview(form.get('imagen')?.value)" alt="icon">
+              </ng-container>
+              <ng-template #iconify>
+                <iconify-icon [attr.icon]="iconPreview(form.get('imagen')?.value)" width="32"></iconify-icon>
+              </ng-template>
+            </div>
+            <div class="icon-meta">
+              <span class="icon-name">{{ form.get('imagen')?.value || 'Ninguno' }}</span>
+              <span class="icon-label">Icono identificador</span>
+            </div>
+            <button type="button" class="btn-picker" (click)="openPicker()">Cambiar Icono</button>
+          </div>
+        </div>
+
+      </div>
+
+      <footer class="dlg-actions">
+        <button type="button" class="btn-cancel" (click)="onCancel()">Cancelar</button>
+        <button type="submit" class="btn-submit" [disabled]="creating || form.invalid">
+          <span *ngIf="!creating">{{ mode === 'edit' ? 'Guardar Cambios' : 'Crear Acceso' }}</span>
+          <iconify-icon *ngIf="creating" icon="line-md:loading-twotone-loop" class="spin"></iconify-icon>
+        </button>
+      </footer>
+    </form>
+  </div>
+</div>
+
+<app-icon-picker 
+  *ngIf="showIconPicker" 
+  (pick)="onIconPicked($event)" 
+  (close)="showIconPicker = false">
+</app-icon-picker>

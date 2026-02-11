@@ -1,0 +1,236 @@
+.mh-modal {
+  width: 760px;
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+.mh-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e6e8eb;
+}
+.mh-head h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.mh-toolbar {
+  padding: 10px 16px;
+  border-bottom: 1px solid #f0f2f4;
+  button svg {
+    margin-right: 6px;
+  }
+}
+.mh-body {
+  padding: 8px 8px 14px;
+  overflow: auto;
+}
+.mh-foot {
+  padding: 12px 16px;
+  border-top: 1px solid #e6e8eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.mh-state {
+  padding: 18px;
+}
+.mh-error {
+  color: #b42318;
+  background: #fdecec;
+  border: 1px solid #f4c7c7;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin: 10px 16px;
+}
+
+/* === botones === */
+.btn {
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.5rem;
+  background: #f5f6f7;
+  border: 1px solid #cfd3d7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.btn:hover {
+  background: #eef1f4;
+}
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+.btn-primary:hover {
+  filter: brightness(0.95);
+}
+
+/* === árbol === */
+.tree {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+.root {
+  padding: 8px 12px;
+}
+.branch {
+  list-style: none;
+  margin: 0;
+  padding-left: 22px;
+  position: relative;
+}
+.branch::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #e5e7eb;
+}
+.ti {
+  position: relative;
+  padding-left: 0;
+  margin: 0;
+}
+.ti::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: #e5e7eb;
+}
+.ti:last-child::before {
+  height: 14px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.22rem 0.35rem;
+  border-radius: 0.4rem;
+  position: relative;
+  margin-left: 22px;
+}
+.row::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 50%;
+  width: 14px;
+  height: 1px;
+  background: #e5e7eb;
+  transform: translateY(-50%);
+}
+.row:hover {
+  background: #f8fafc;
+}
+.caret {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #cfd3d7;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 2px;
+  background: #f6f7f9;
+  position: relative;
+}
+.caret::after {
+  content: "";
+  border-style: solid;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent #444;
+  transform-origin: center;
+  transition: transform 0.18s ease;
+}
+.tgl {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.tgl:not(:checked) ~ .branch {
+  display: none;
+}
+.tgl:checked + .row .caret::after {
+  transform: rotate(90deg);
+}
+.node {
+  font-weight: 600;
+}
+.node.no-children {
+  font-weight: 600;
+  padding-left: 18px;
+  position: relative;
+}
+.node.no-children::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border: 1px solid transparent;
+  display: inline-block;
+  position: absolute;
+  left: -18px;
+  top: 2px;
+}
+
+/* === acciones === */
+.actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.3rem;
+}
+.tiny {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.15s ease-in-out;
+}
+.tiny svg {
+  pointer-events: none;
+}
+.tiny.add {
+  background: #e7f9ee;
+  color: #2ecc71;
+}
+.tiny.add:hover {
+  background: #d3f5e1;
+}
+.tiny.edit {
+  background: #e8f1fc;
+  color: #276ca1;
+}
+.tiny.edit:hover {
+  background: #d6e8fa;
+}
+.tiny.danger {
+  background: #fdecec;
+  color: #e03131;
+}
+.tiny.danger:hover {
+  background: #f9d8d8;
+}

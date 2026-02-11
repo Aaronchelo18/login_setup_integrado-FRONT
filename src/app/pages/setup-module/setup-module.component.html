@@ -1,0 +1,50 @@
+<div class="main-container">
+  <div class="left-panel">
+    <button class="mobile-menu-button" (click)="toggleMenu()">
+      <i data-eva="person-outline"></i>
+    </button>
+
+    <div class="modules-wrapper">
+      <div class="module-card" *ngFor="let modulo of modulos" (click)="goToAccess(modulo)">
+        <img *ngIf="isImg(modulo._view)" [src]="modulo._view.src" class="module-icon img">
+        <span *ngIf="isMs(modulo._view)" class="module-icon material" [ngClass]="modulo._view.variantClass">{{ modulo._view.name }}</span>
+        <i *ngIf="isFa(modulo._view)" class="module-icon fa" [ngClass]="modulo._view.classes"></i>
+        <span *ngIf="isEva(modulo._view)" class="module-icon eva-holder"><i [attr.data-eva]="modulo._view.name"></i></span>
+        <iconify-icon *ngIf="isIfy(modulo._view)" class="module-icon" [attr.icon]="modulo._view.icon"></iconify-icon>
+        <div class="module-name">{{ modulo.nombre }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel" [class.is-open]="isMenuOpen">
+    <div class="user-info-card" *ngIf="user$ | async as user; else loading">
+      <button class="close-menu-button" (click)="toggleMenu()">
+        <i data-eva="close-outline"></i>
+      </button>
+
+      <img src="assets/img/upeu-logo.png" alt="Logo" class="user-logo" />
+
+      <div class="user-code">
+        <span class="label">Código:</span>
+        <span class="value">{{ user.codigo }}</span>
+      </div>
+
+      <div class="user-full-name">
+        <span class="user-name-line">{{ user.person?.nombre }}</span>
+        <span class="user-name-line">
+          {{ user.person?.paterno }} {{ user.person?.materno }}
+        </span>
+      </div>
+
+      
+
+      <button class="logout-button" (click)="salir()">SALIR</button>
+    </div>
+
+    <ng-template #loading>
+      <div class="user-info-card">
+        <p>Cargando información...</p>
+      </div>
+    </ng-template>
+  </div>
+</div>
