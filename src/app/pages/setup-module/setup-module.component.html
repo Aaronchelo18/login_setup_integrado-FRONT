@@ -5,7 +5,22 @@
     </button>
 
     <div class="loading-wrapper" *ngIf="loadingModulos">
-      <p>Buscando accesos...</p>
+      <div class="premium-loader-container">
+        <div class="loader-glass-card">
+          <div class="spinner-box">
+            <div class="circle-outer"></div>
+            <div class="circle-inner"></div>
+            <img src="assets/img/cordero.png" class="loader-logo-mini" alt="loading">
+          </div>
+          <div class="loading-text-content">
+            <span class="main-loading-text">Verificando Credenciales</span>
+            <div class="loading-bar-container">
+              <div class="loading-bar-progress"></div>
+            </div>
+            <span class="sub-loading-text">Sincronizando tus módulos de acceso...</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="modules-wrapper" *ngIf="!loadingModulos && modulos.length > 0">
@@ -19,18 +34,29 @@
       </div>
     </div>
 
-    <div class="no-access-wrapper" *ngIf="!loadingModulos && modulos.length === 0">
-      <div class="no-access-content">
-        <i class="eva-icon" data-eva="alert-circle-outline"></i>
-        <h2>Sin accesos disponibles</h2>
-        <p>Actualmente no tienes módulos asignados en este sistema.</p>
-        <p class="support-text">Por favor, contacta al administrador para solicitar permisos.</p>
+    <div class="premium-empty-overlay" *ngIf="!loadingModulos && modulos.length === 0">
+      <div class="premium-glass-card">
+        <div class="premium-icon-sphere">
+          <iconify-icon icon="line-md:alert-circle-loop" class="premium-icon-anim"></iconify-icon>
+        </div>
+        <div class="premium-content">
+          <h2 class="premium-title">Acceso Restringido</h2>
+          <div class="premium-divider"></div>
+          <p class="premium-main-text">No hemos encontrado módulos activos vinculados a tu cuenta en este momento.</p>
+          <div class="premium-badge">
+            <iconify-icon icon="solar:shield-warning-bold-duotone"></iconify-icon>
+            Requiere Gestión de Permisos
+          </div>
+          <p class="premium-footer-text">
+            Por favor, contacta al administrador para solicitar accesos al sistema.
+          </p>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="right-panel" [class.is-open]="isMenuOpen">
-    <div class="user-info-card" *ngIf="user$ | async as user; else loading">
+    <div class="user-info-card" *ngIf="user$ | async as user; else loadingUser">
       <button class="close-menu-button" (click)="toggleMenu()">
         <i data-eva="close-outline"></i>
       </button>
@@ -52,7 +78,7 @@
       <button class="logout-button" (click)="salir()">SALIR</button>
     </div>
 
-    <ng-template #loading>
+    <ng-template #loadingUser>
       <div class="user-info-card">
         <p>Cargando información...</p>
       </div>

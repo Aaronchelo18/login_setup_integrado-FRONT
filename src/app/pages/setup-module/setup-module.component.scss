@@ -436,3 +436,179 @@
 
   .module-name { font-size: 0.8rem; }
 }
+
+/* --- CONFIGURACIÓN DE PANELES PREMIUM (Loader + Empty State) --- */
+
+.premium-loader-container,
+.premium-empty-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%; 
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.loader-glass-card,
+.premium-glass-card {
+  background: rgba(10, 35, 75, 0.95); /* Opacidad alta para panel sólido */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 28px;
+  border: 1px solid rgba(204, 157, 82, 0.4); 
+  padding: 40px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  animation: premiumFadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- ELEMENTOS DEL LOADER --- */
+.spinner-box {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-outer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #cc9d52; 
+  border-radius: 50%;
+  animation: spinLoader 1.2s linear infinite;
+}
+
+.circle-inner {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border: 3px solid transparent;
+  border-bottom-color: #cc9d52;
+  opacity: 0.6;
+  border-radius: 50%;
+  animation: spinLoaderReverse 0.8s linear infinite;
+}
+
+.loader-logo-mini {
+  width: 35px;
+  height: auto;
+  filter: none; /* Eliminada la sombra del logo */
+}
+
+.loading-bar-container {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin: 15px 0;
+  overflow: hidden;
+}
+
+.loading-bar-progress {
+  width: 50%;
+  height: 100%;
+  background: #cc9d52;
+  box-shadow: none; /* Eliminado el brillo neón de la barra */
+  animation: loadingSlide 1.5s infinite ease-in-out;
+}
+
+/* --- ELEMENTOS DEL EMPTY STATE --- */
+.premium-icon-sphere {
+  width: 70px;
+  height: 70px;
+  background: #cc9d52;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  transform: rotate(-5deg);
+}
+
+.premium-icon-anim {
+  font-size: 40px;
+  color: #0d2f64;
+}
+
+/* --- TEXTOS UNIFICADOS (BLANCO PURO SIN SOMBRAS) --- */
+.premium-title, 
+.main-loading-text {
+  color: #ffffff !important;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: none !important; /* Eliminada cualquier sombra de texto */
+}
+
+.premium-main-text,
+.sub-loading-text,
+.premium-footer-text {
+  color: #ffffff !important; /* Texto totalmente blanco */
+  opacity: 1; /* Opacidad total para máxima claridad */
+  font-size: 1rem;
+  margin-bottom: 20px;
+  text-shadow: none !important;
+}
+
+.sub-loading-text, 
+.premium-footer-text {
+  font-size: 0.85rem;
+  margin-top: 15px;
+  display: block;
+}
+
+.premium-divider {
+  width: 40px;
+  height: 3px;
+  background: #cc9d52;
+  margin: 15px auto;
+  border-radius: 2px;
+}
+
+.premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(204, 157, 82, 0.2);
+  color: #ffffff; /* Texto del badge también blanco para contraste */
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(204, 157, 82, 0.5);
+}
+
+/* --- ANIMACIONES --- */
+@keyframes spinLoader { to { transform: rotate(360deg); } }
+@keyframes spinLoaderReverse { to { transform: rotate(-360deg); } }
+@keyframes loadingSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+@keyframes premiumFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- RESPONSIVO --- */
+@media (max-width: 1024px) {
+  .premium-loader-container,
+  .premium-empty-overlay {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 40px auto;
+    width: 90%;
+  }
+}
