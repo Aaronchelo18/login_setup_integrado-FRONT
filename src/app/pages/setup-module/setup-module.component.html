@@ -4,7 +4,11 @@
       <i data-eva="person-outline"></i>
     </button>
 
-    <div class="modules-wrapper">
+    <div class="loading-wrapper" *ngIf="loadingModulos">
+      <p>Buscando accesos...</p>
+    </div>
+
+    <div class="modules-wrapper" *ngIf="!loadingModulos && modulos.length > 0">
       <div class="module-card" *ngFor="let modulo of modulos" (click)="goToAccess(modulo)">
         <img *ngIf="isImg(modulo._view)" [src]="modulo._view.src" class="module-icon img">
         <span *ngIf="isMs(modulo._view)" class="module-icon material" [ngClass]="modulo._view.variantClass">{{ modulo._view.name }}</span>
@@ -12,6 +16,15 @@
         <span *ngIf="isEva(modulo._view)" class="module-icon eva-holder"><i [attr.data-eva]="modulo._view.name"></i></span>
         <iconify-icon *ngIf="isIfy(modulo._view)" class="module-icon" [attr.icon]="modulo._view.icon"></iconify-icon>
         <div class="module-name">{{ modulo.nombre }}</div>
+      </div>
+    </div>
+
+    <div class="no-access-wrapper" *ngIf="!loadingModulos && modulos.length === 0">
+      <div class="no-access-content">
+        <i class="eva-icon" data-eva="alert-circle-outline"></i>
+        <h2>Sin accesos disponibles</h2>
+        <p>Actualmente no tienes módulos asignados en este sistema.</p>
+        <p class="support-text">Por favor, contacta al administrador para solicitar permisos.</p>
       </div>
     </div>
   </div>
@@ -35,8 +48,6 @@
           {{ user.person?.paterno }} {{ user.person?.materno }}
         </span>
       </div>
-
-      
 
       <button class="logout-button" (click)="salir()">SALIR</button>
     </div>

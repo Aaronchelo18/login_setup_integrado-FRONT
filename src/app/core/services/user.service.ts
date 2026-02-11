@@ -6,10 +6,12 @@ import { environment } from '../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
 
 export interface UserData {
+  id_persona: number | string; // <--- Nuevo campo agregado
   codigo: string;
   nombres: string;
   apellidos: string;
   id_rol: number | null; // <--- Nuevo campo agregado
+  roles_ids: number[]; // <--- Nuevo campo agregado para múltiples roles
   person?: any; 
   correo?: string;
   foto?: string;
@@ -31,18 +33,17 @@ export class UserService {
   private loadUserFromToken(): void {
     const token = localStorage.getItem('code5-access-token'); 
     
-    if (!token) {
-      console.warn('No se encontró el token "code5-access-token" en LocalStorage.');
-      return;
-    }
+    if (!token) return;
 
     try {
       const payload: any = jwtDecode(token);
       
-      // Mapeamos el payload incluyendo el nuevo id_rol enviado por el Backend
       const userData: UserData = {
+        // AGREGAR ESTA LÍNEA: Capturamos el 'sub' del token como id_persona
+        id_persona: Number(payload.sub), 
         codigo: payload.codigo || '',
-        id_rol: payload.id_rol || null, // <--- Capturamos el ID de rol del token
+        id_rol: payload.id_rol || null, 
+        roles_ids: payload.roles_ids || [], // Capturamos el array si existe
         nombres: payload.person?.nombre || '',
         apellidos: `${payload.person?.paterno || ''} ${payload.person?.materno || ''}`.trim(),
         person: payload.person, 
@@ -50,9 +51,9 @@ export class UserService {
       };
 
       this.userSubject.next(userData);
-      console.log('Usuario y Rol cargados desde el token:', userData);
+      console.log('Usuario cargado con ID:', userData.id_persona);
     } catch (error) {
-      console.error('Error decodificando el token en Setup:', error);
+      console.error('Error decodificando el token:', error);
     }
   }
 

@@ -17,15 +17,16 @@ export class ModuloService {
   }
 
   /**
-   * Obtiene los módulos. Si se pasa id_rol, el backend filtrará por permisos.
+   * Obtiene los módulos. Filtra por id_persona para obtener accesos según el query maestro.
    */
-  getModulos(opts?: { force?: boolean, id_rol?: number | null }): Observable<Modulo[]> {
+  getModulos(opts?: { force?: boolean, id_persona?: number | null }): Observable<Modulo[]> {
     let params = new HttpParams();
+    
     if (opts?.force) params = params.set('_', Date.now().toString());
     
-    // Enviamos el id_rol si existe para filtrar por permisos
-    if (opts?.id_rol) {
-      params = params.set('id_rol', opts.id_rol.toString());
+    // Cambiado de id_rol a id_persona para que Laravel ejecute el INNER JOIN correcto
+    if (opts?.id_persona) {
+      params = params.set('id_persona', opts.id_persona.toString());
     }
 
     return this.http.get<any>(this.base, { params }).pipe(
