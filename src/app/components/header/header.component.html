@@ -2,24 +2,55 @@
   <div class="left-section">
     <button class="toggle-button" (click)="onToggleSidebar()">
       <span class="menu-icon">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span><span></span>
       </span>
     </button>
     <div class="separator"></div>
-    <img src="../../../assets/img/cordero.png" alt="Logo" class="logo" />
+    <img src="assets/img/cordero.png" alt="Logo" class="logo" />
   </div>
 
   <div class="right-section">
     <ion-icon name="apps" class="apps-icon"></ion-icon>
     <div class="separator"></div>
-    <img src="../../../assets/img/perfil.png" alt="Foto" class="user-img" />
-    <div class="text-info">
-      <span class="nombre">Nombre ejemplo</span>
-      <span class="codigo">Código: 123456789</span>
+    
+    <img 
+      src="assets/img/perfil.png" 
+      alt="Foto" 
+      class="user-img" 
+      (click)="togglePanel()" 
+    />
+
+    <div class="text-info" *ngIf="usuario">
+      <span class="nombre">{{ nombreCompleto }}</span>
+      <span class="codigo" *ngIf="codigo">Código: {{ codigo }}</span>
     </div>
   </div>
 </header>
 
+<div class="panel-usuario-derecho" *ngIf="panelAbierto && usuario">
+  <div class="panel-header">
+    <h3>Datos del Usuario</h3>
+  </div>
+  
+  <div class="panel-body">
+    <div class="info-row">
+      <span class="label">Nombre:</span>
+      <span class="value">{{ usuario.nombres || usuario.person?.nombre }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Apellidos:</span>
+      <span class="value">{{ (usuario.person?.paterno || '') + ' ' + (usuario.person?.materno || '') }}</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Correo:</span>
+      <span class="value">{{ usuario.correo }}</span>
+    </div>
+  </div>
+
+  <div class="boton-salida">
+    <button (click)="logout()">
+      <ion-icon name="log-out-outline"></ion-icon>
+      Cerrar Sesión
+    </button>
+  </div>
+</div>
