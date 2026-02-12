@@ -1,0 +1,29 @@
+<div class="screen">
+  <app-roles-hero
+    [estado]="filters.estado"
+    (estadoChange)="onEstadoChange($event)"
+    (visualizar)="onVisualizar()"
+    (nuevo)="onNuevo()">
+  </app-roles-hero>
+
+  <app-roles-table
+    [roles]="roles"
+    [loading]="loading"
+    (edit)="onEdit($event)"
+    (toggle)="onToggle($event)"
+    (remove)="onRemove($event)">
+  </app-roles-table>
+</div>
+
+<!-- Modal Crear -->
+<app-role-form-modal
+  [visible]="showCreate"
+  [saving]="savingCreate"
+  [canMutate]="true"
+  [hideEstado]="editingRoleId != null"
+  [editing]="editingRoleId != null"
+  [serverError]="serverErrorCreate"
+  [serverFieldErrors]="serverFieldErrorsCreate"
+  (close)="onCloseModal()"
+  (submit)="onSubmitCreate($event)">
+</app-role-form-modal>

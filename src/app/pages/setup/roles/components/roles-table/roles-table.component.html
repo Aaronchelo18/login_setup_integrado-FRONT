@@ -1,0 +1,55 @@
+<section class="table-panel">
+  <header class="table-head"><h2>Listado</h2></header>
+
+  <div class="card">
+    <div class="thead">
+      <div class="th col-id">#</div>
+      <div class="th">Descripción</div>
+      <div class="th col-est center">Estado</div>
+      <div class="th col-ops right">Opciones</div>
+    </div>
+
+    <div *ngIf="loading" class="empty">
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+      <div class="skeleton-row"></div>
+    </div>
+
+    <div *ngIf="!loading && !roles.length" class="empty">Sin datos para mostrar</div>
+
+    <div class="tbody" *ngIf="!loading && roles.length">
+      <div class="row" *ngFor="let r of roles; trackBy: trackById; let i = index" [class.zebra]="i % 2 === 1">
+        <div class="td col-id">{{ r.id_rol }}</div>
+        <div class="td"><span class="name">{{ r.nombre }}</span></div>
+        <div class="td col-est center">
+          <span class="pill" [class.on]="r.estado==='1'" [class.off]="r.estado==='0'">
+            {{ r.estado==='1' ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+        <div class="td col-ops right ops">
+          <button type="button" class="icon-btn" title="Editar" (click)="edit.emit(r)">
+            <ion-icon name="pencil-outline"></ion-icon>
+          </button>
+          <button type="button" class="toggle-btn" [class.is-on]="r.estado==='1'" title="Cambiar estado" (click)="toggle.emit(r)">
+            <span class="knob"></span>
+          </button>
+          <button type="button" class="icon-btn danger" title="Eliminar" (click)="remove.emit(r)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="tfoot">
+      <div class="pager">
+        <button type="button" class="btn ghost sm" disabled aria-label="Anterior">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+        <span>1</span>
+        <button type="button" class="btn ghost sm" disabled aria-label="Siguiente">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+    </footer>
+  </div>
+</section>

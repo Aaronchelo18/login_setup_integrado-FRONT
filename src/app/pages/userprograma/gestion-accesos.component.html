@@ -1,0 +1,308 @@
+<div class="page-container">
+  <main class="content-wrapper">
+    <!-- Encabezado -->
+    <header class="page-header">
+      <h2>Gestión de Accesos de Usuarios</h2>
+      <p class="subtitle">
+        Administre los accesos a campus, facultades y programas de estudio
+      </p>
+    </header>
+
+    <!-- Card de búsqueda -->
+    <section class="search-card">
+      <div class="search-header">
+        <i class="bi bi-person-search"></i>
+        <strong>Buscar Usuario</strong>
+      </div>
+
+      <p class="search-help">
+        Ingrese el nombre o ID para localizar al usuario y gestionar sus accesos.
+      </p>
+
+      <div class="search-wrapper">
+        <div class="search-input-group">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Buscar usuario por nombre o ID..."
+            [value]="searchTerm"
+            (input)="onSearchChange($event)"
+            (keyup.enter)="buscarUsuario()"
+          />
+
+          <button
+            type="button"
+            class="btn-search"
+            (click)="buscarUsuario()"
+            [disabled]="searchTerm.length < minChars || loadingSearch"
+          >
+            <span *ngIf="!loadingSearch">
+              <i class="bi bi-search"></i>
+              <span class="btn-text">Buscar</span>
+            </span>
+            <span *ngIf="loadingSearch" class="loading-content">
+              <span class="spinner-border spinner-border-sm me-1"></span>
+              <span class="btn-text">Buscando...</span>
+            </span>
+          </button>
+        </div>
+
+        <div *ngIf="loadingSearch" class="search-spinner">
+          <div class="spinner-border spinner-border-sm text-secondary"></div>
+        </div>
+
+        <div
+          *ngIf="!loadingSearch && searchResults.length > 0"
+          class="results-dropdown"
+        >
+          <button
+            type="button"
+            class="result-item"
+            *ngFor="let u of searchResults"
+            (click)="seleccionarUsuario(u)"
+          >
+            <div class="result-name">{{ u.nombre_completo }}</div>
+            <small class="result-info">
+              ID: {{ u.id_persona }} · {{ u.correo }}
+            </small>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Card de usuario seleccionado -->
+    <section *ngIf="usuarioSeleccionado" class="user-card">
+      <div class="user-header">
+        <div class="user-info-section">
+          <div class="user-avatar">
+            <i class="bi bi-person"></i>
+          </div>
+          <div class="user-details">
+            <h5>{{ usuarioSeleccionado!.nombre_completo }}</h5>
+            <div class="user-meta">
+              ID: {{ usuarioSeleccionado!.id_persona }} |
+              {{ usuarioSeleccionado!.correo }}
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn-close-user"
+          (click)="limpiarUsuario()"
+        >
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="btn-add-access"
+        (click)="abrirModalAsignar()"
+        [disabled]="loadingAccesos"
+      >
+        <i class="bi bi-plus-circle me-2"></i>
+        Asignar nuevo acceso
+      </button>
+
+      <div class="accesos-section">
+        <h6>Accesos actuales ({{ accesos.length }})</h6>
+
+        <div *ngIf="loadingAccesos" class="loading-text">
+          <div class="spinner-border spinner-border-sm me-2"></div>
+          <span>Cargando accesos...</span>
+        </div>
+
+        <div
+          *ngIf="!loadingAccesos && accesos.length === 0"
+          class="empty-text"
+        >
+          No se encontraron accesos para este usuario.
+        </div>
+
+        <div
+          *ngIf="!loadingAccesos && accesos.length > 0"
+          class="accesos-table"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Campus</th>
+                <th>Facultad</th>
+                <th>Programa de Estudio</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let acc of accesos">
+                <td>{{ acc.id }}</td>
+                <td>{{ acc.campus }}</td>
+                <td>{{ acc.facultad }}</td>
+                <td>{{ acc.programa_estudio }}</td>
+                <td class="actions-cell">
+                  <button
+                    type="button"
+                    class="btn-delete"
+                    (click)="eliminarAcceso(acc)"
+                    title="Eliminar acceso"
+                  >
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Modal Asignar Nuevo Acceso -->
+<div *ngIf="showAssignModal" class="modal-overlay" (click)="cerrarModal()">
+  <div
+    class="modal-container"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header-custom">
+      <h3>Asignar Nuevo Acceso</h3>
+      <button
+        type="button"
+        class="btn-close-modal"
+        (click)="cerrarModal()"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body-custom">
+      <form [formGroup]="accesoForm">
+        <div class="form-group">
+          <label class="form-label-custom">
+            <span class="label-number">1</span>
+            Seleccionar Campus *
+          </label>
+          <select
+            class="form-select-custom"
+            formControlName="id_campus"
+            (change)="onChangeCampus($event)"
+          >
+            <option [value]="''">-- Seleccione un campus --</option>
+            <option *ngFor="let c of campusList" [value]="c.id_campus">
+              {{ c.campus }}
+            </option>
+          </select>
+          <div
+            class="error-message"
+            *ngIf="
+              accesoForm.get('id_campus')?.touched &&
+              accesoForm.get('id_campus')?.invalid
+            "
+          >
+            Seleccione un campus
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label-custom">
+            <span class="label-number">2</span>
+            Seleccionar Facultad *
+          </label>
+          <div class="select-wrapper">
+            <select
+              class="form-select-custom"
+              formControlName="id_facultad"
+              (change)="onChangeFacultad($event)"
+              [disabled]="facultadesList.length === 0 || loadingFacultades"
+            >
+              <option [value]="''">-- Seleccione una facultad --</option>
+              <option
+                *ngFor="let f of facultadesList"
+                [value]="f.id_facultad"
+              >
+                {{ f.nombre }}
+              </option>
+            </select>
+
+            <div *ngIf="loadingFacultades" class="select-loading">
+              <div class="spinner-border spinner-border-sm"></div>
+              <span>Cargando facultades...</span>
+            </div>
+          </div>
+          <div
+            class="error-message"
+            *ngIf="
+              accesoForm.get('id_facultad')?.touched &&
+              accesoForm.get('id_facultad')?.invalid
+            "
+          >
+            Seleccione una facultad
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label-custom">
+            <span class="label-number">3</span>
+            Seleccionar Programa de Estudio *
+          </label>
+          <div class="select-wrapper">
+            <select
+              class="form-select-custom"
+              formControlName="id_programa_estudio"
+              [disabled]="programasList.length === 0 || loadingProgramas"
+            >
+              <option [value]="''">-- Seleccione un programa --</option>
+              <option
+                *ngFor="let p of programasList"
+                [value]="p.id_programa_estudio"
+              >
+                {{ p.nombre }}
+              </option>
+            </select>
+
+            <div *ngIf="loadingProgramas" class="select-loading">
+              <div class="spinner-border spinner-border-sm"></div>
+              <span>Cargando programas...</span>
+            </div>
+          </div>
+          <div
+            class="error-message"
+            *ngIf="
+              accesoForm.get('id_programa_estudio')?.touched &&
+              accesoForm.get('id_programa_estudio')?.invalid
+            "
+          >
+            Seleccione un programa
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer-custom">
+      <button
+        type="button"
+        class="btn-cancel"
+        (click)="cerrarModal()"
+        [disabled]="savingAccess"
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn-save"
+        (click)="guardarAcceso()"
+        [disabled]="savingAccess || accesoForm.invalid"
+      >
+        <span *ngIf="!savingAccess">
+          <i class="bi bi-check-circle me-2"></i>
+          Guardar Acceso
+        </span>
+        <span *ngIf="savingAccess">
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          Guardando...
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

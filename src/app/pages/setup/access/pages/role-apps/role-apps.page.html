@@ -1,0 +1,54 @@
+<div class="page">
+  <!-- Encabezado -->
+  <header class="hero">
+    <div class="hero__row">
+      <!-- Botón para volver -->
+      <button class="back" type="button" (click)="goBack()" aria-label="Volver">⟵</button>
+
+      <div class="hero__meta">
+        <div class="crumbs">Home / <b>config</b> / access</div>
+        <h1>Mis Aplicaciones</h1>
+
+        <!-- Info de Rol actual -->
+        <p class="subtitle">
+          Rol actual: <b>{{ roleName }}</b>
+          <span class="badge"
+                *ngIf="roleEstado"
+                [class.badge--ok]="roleEstado==='1'"
+                [class.badge--bad]="roleEstado==='0'">
+            {{ roleEstado==='1' ? 'Activo' : 'Inactivo' }}
+          </span>
+        </p>
+
+        <p class="subtitle">Selecciona una aplicación para configurar sus módulos</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor de aplicaciones -->
+  <section class="grid">
+    <!-- Skeleton mientras carga -->
+    <ng-container *ngIf="loading">
+      <div class="sk"></div>
+      <div class="sk"></div>
+    </ng-container>
+
+    <!-- Cards de aplicaciones -->
+    <button
+      class="card"
+      type="button"
+      *ngFor="let c of cards; trackBy: trackById"
+      (click)="open(c)"
+      [attr.aria-label]="'Abrir ' + c.nombre">
+      <div class="icon">🔑</div>
+      <div class="body">
+        <div class="title">{{ c.nombre }}</div>
+      </div>
+    </button>
+
+    <!-- Mensaje si no hay resultados -->
+    <div class="empty" *ngIf="!loading && cards.length === 0">
+      Sin aplicaciones
+    </div>
+  </section>
+</div>

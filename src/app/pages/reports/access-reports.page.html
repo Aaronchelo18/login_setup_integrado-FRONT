@@ -1,0 +1,261 @@
+<div class="page-container">
+  <div class="content-wrapper">
+    <!-- Header -->
+    <header class="page-header">
+      <div class="header-content">
+        <div class="header-text">
+          <h2>Reportes de Accesos de Usuarios</h2>
+          <p class="subtitle">
+            Visualiza y filtra todos los accesos asignados a usuarios
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="btn-export"
+          (click)="exportToExcel()"
+          aria-label="Exportar reportes a Excel"
+        >
+          <i class="bi bi-file-earmark-excel"></i>
+          <span>Exportar Excel</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Filters Card -->
+    <section
+      class="filters-card"
+      aria-label="Filtros de búsqueda de reportes de acceso"
+    >
+      <div class="filters-header">
+        <i class="bi bi-funnel"></i>
+        <strong>Filtros de Búsqueda</strong>
+      </div>
+
+      <div class="filters-grid">
+        <!-- Search Input -->
+        <div class="filter-group">
+          <label class="filter-label" for="searchTermInput">
+            <i class="bi bi-search"></i>
+            Buscar
+          </label>
+          <input
+            id="searchTermInput"
+            type="text"
+            class="filter-input"
+            placeholder="Nombre, correo o programa..."
+            [(ngModel)]="searchTerm"
+            (keyup.enter)="applyFilters()"
+          />
+        </div>
+
+        <!-- Campus Filter -->
+        <div class="filter-group">
+          <label class="filter-label" for="campusSelect">
+            <i class="bi bi-building"></i>
+            Campus
+          </label>
+          <select
+            id="campusSelect"
+            class="filter-select"
+            [(ngModel)]="selectedCampus"
+          >
+            <option value="">Todos los campus</option>
+            <option *ngFor="let campus of campusList" [value]="campus.id">
+              {{ campus.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Facultad Filter -->
+        <div class="filter-group">
+          <label class="filter-label" for="facultadSelect">
+            <i class="bi bi-mortarboard"></i>
+            Facultad
+          </label>
+          <select
+            id="facultadSelect"
+            class="filter-select"
+            [(ngModel)]="selectedFacultad"
+          >
+            <option value="">Todas las facultades</option>
+            <option *ngFor="let facultad of facultadesList" [value]="facultad.id">
+              {{ facultad.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Programa Estudio Filter -->
+        <div class="filter-group">
+          <label class="filter-label" for="programaSelect">
+            <i class="bi bi-book"></i>
+            Programa de Estudio
+          </label>
+          <select
+            id="programaSelect"
+            class="filter-select"
+            [(ngModel)]="selectedPrograma"
+          >
+            <option value="">Todos los programas</option>
+            <option *ngFor="let programa of programasList" [value]="programa.id">
+              {{ programa.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Search Button -->
+        <div class="filter-group filter-actions">
+          <button
+            type="button"
+            class="btn-search"
+            (click)="applyFilters()"
+          >
+            <i class="bi bi-search"></i>
+            Buscar
+          </button>
+        </div>
+
+        <!-- Clear Filters Button -->
+        <div class="filter-group filter-actions">
+          <button
+            type="button"
+            class="btn-clear"
+            (click)="clearFilters()"
+          >
+            <i class="bi bi-x-circle"></i>
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Info -->
+    <section
+      class="results-info"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <span class="results-count">
+        Mostrando
+        <strong>{{ paginatedReports.length }}</strong>
+        de
+        <strong>{{ totalRecords }}</strong>
+        registros
+      </span>
+      <div class="items-per-page">
+        <label for="itemsPerPageSelect">Mostrar:</label>
+        <select
+          id="itemsPerPageSelect"
+          class="page-size-select"
+          [(ngModel)]="itemsPerPage"
+          (change)="onItemsPerPageChange()"
+        >
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Table Card -->
+    <section
+      class="table-card"
+      aria-label="Tabla de reportes de accesos de usuarios"
+    >
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span>Cargando reportes...</span>
+      </div>
+
+      <!-- Empty State -->
+      <div
+        *ngIf="!loading && paginatedReports.length === 0"
+        class="empty-state"
+      >
+        <i class="bi bi-inbox"></i>
+        <h4>No se encontraron resultados</h4>
+        <p>Intenta ajustar los filtros de búsqueda</p>
+      </div>
+
+      <!-- Table -->
+      <div
+        *ngIf="!loading && paginatedReports.length > 0"
+        class="table-wrapper"
+      >
+        <table class="reports-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Usuario</th>
+              <th>Correo</th>
+              <th>Campus</th>
+              <th>Facultad</th>
+              <th>Programa de Estudio</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let report of paginatedReports; let i = index">
+              <td>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
+              <td class="user-cell">
+                <div class="user-avatar">
+                  <i class="bi bi-person"></i>
+                </div>
+                <strong>{{ report.nombre_completo }}</strong>
+              </td>
+              <td class="email-cell">{{ report.correo }}</td>
+              <td>
+                <span class="badge badge-campus">
+                  {{ report.campus }}
+                </span>
+              </td>
+              <td class="facultad-cell">{{ report.facultad }}</td>
+              <td class="programa-cell">{{ report.programa_estudio }}</td>
+              <td>{{ report.fecha_asignacion || 'N/A' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pagination -->
+    <nav
+      *ngIf="!loading && paginatedReports.length > 0"
+      class="pagination-container"
+      aria-label="Paginación de reportes"
+    >
+      <button
+        type="button"
+        class="btn-page"
+        [disabled]="currentPage === 1"
+        (click)="onPageChange(currentPage - 1)"
+        aria-label="Página anterior"
+      >
+        <i class="bi bi-chevron-left"></i>
+      </button>
+
+      <button
+        *ngFor="let page of pages"
+        type="button"
+        class="btn-page"
+        [class.active]="page === currentPage"
+        (click)="onPageChange(page)"
+        [attr.aria-current]="page === currentPage ? 'page' : null"
+      >
+        {{ page }}
+      </button>
+
+      <button
+        type="button"
+        class="btn-page"
+        [disabled]="currentPage === totalPages"
+        (click)="onPageChange(currentPage + 1)"
+        aria-label="Página siguiente"
+      >
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </nav>
+  </div>
+</div>

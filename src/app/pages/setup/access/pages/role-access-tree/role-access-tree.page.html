@@ -1,0 +1,123 @@
+<div class="page">
+  <!-- Encabezado -->
+  <header class="hero">
+    <div class="hero__row">
+      <button class="back" type="button" (click)="back()" aria-label="Volver">⟵</button>
+
+      <div class="hero__meta">
+        <div class="crumbs">Home / <b>config</b> / access</div>
+        <h1>Aplicación → Gestión de Accesos</h1>
+
+        <p class="subtitle">
+          Rol actual:
+          <b>{{ roleName || ('Rol #' + idRol) }}</b>
+          <span *ngIf="roleEstado"
+                class="badge"
+                [class.badge--ok]="roleEstado === '1'"
+                [class.badge--bad]="roleEstado === '0'">
+            {{ roleEstado === '1' ? 'Activo' : 'Inactivo' }}
+          </span>
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Card principal -->
+  <section class="card">
+    <div class="card__head">
+      <div class="title">
+       
+      </div>
+      <div class="tools">
+        <button class="link" (click)="checkAll(true)">Check All</button>
+        <span class="sep">/</span>
+        <button class="link" (click)="checkAll(false)">Uncheck All</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="sk" *ngIf="loading">Cargando…</div>
+
+    <!-- Árbol -->
+    <div class="tree-wrap" *ngIf="!loading">
+      <ul class="tree">
+        <ng-container *ngFor="let root of tree; trackBy: trackById">
+          <li class="branch branch-root">
+            <div class="node-grid level-0">
+              <div class="icon-col"><span class="node__icon">⚙</span></div>
+              <div class="content-col">
+                <label class="node__tag">
+                  <input type="checkbox"
+                         [(ngModel)]="root.checked"
+                         (change)="toggle(root, root.checked)">
+                  <span class="node__text">{{ root.nombre }}</span>
+                </label>
+              </div>
+              <div class="action-col">
+                <!-- Llave SOLO si nivel 2 -->
+                <button class="chip"
+                        *ngIf="root.hasPriv"
+                        [disabled]="!root.checked"
+                        title="Privilegios"
+                        (click)="openPrivs(root)">🗝</button>
+              </div>
+            </div>
+
+            <!-- hijos -->
+            <ng-template [ngTemplateOutlet]="childrenTpl"
+                         [ngTemplateOutletContext]="{ kids: root.children, depth: 1 }">
+            </ng-template>
+          </li>
+        </ng-container>
+      </ul>
+    </div>
+
+    <div class="card__foot">
+      <button class="btn btn--ghost pill" (click)="back()">Cancelar</button>
+      <button class="btn pill" (click)="save()" [disabled]="saving || loading">
+        {{ saving ? 'Guardando…' : 'Asignar' }}
+      </button>
+    </div>
+  </section>
+
+  <!-- Template recursivo -->
+  <ng-template #childrenTpl let-kids="kids" let-depth="depth">
+    <ul class="tree" *ngIf="kids?.length">
+      <li class="branch" *ngFor="let n of kids; trackBy: trackById">
+        <div class="node-grid" [ngStyle]="{ 'margin-left.px': depth * 30 }">
+          <div class="icon-col">
+            <span class="node__icon">{{ n.children?.length ? '📁' : '📄' }}</span>
+          </div>
+          <div class="content-col">
+            <label class="node__tag">
+              <input type="checkbox"
+                     [(ngModel)]="n.checked"
+                     (change)="toggle(n, n.checked)">
+              <span class="node__text">{{ n.nombre }}</span>
+            </label>
+          </div>
+          <div class="action-col">
+            <button class="chip"
+                    *ngIf="n.hasPriv"
+                    [disabled]="!n.checked"
+                    title="Privilegios"
+                    (click)="openPrivs(n)">🗝</button>
+          </div>
+        </div>
+
+        <ng-template [ngTemplateOutlet]="childrenTpl"
+                     [ngTemplateOutletContext]="{ kids: n.children, depth: depth + 1 }">
+        </ng-template>
+      </li>
+    </ul>
+  </ng-template>
+
+  <!-- Modal de privilegios (se monta solo si hay datos) -->
+  <app-privileges-modal
+    *ngIf="showPrivs && privTarget"
+    [show]="showPrivs"
+    [idRol]="idRol"
+    [target]="privTarget"
+    (closed)="onClosePrivs($event)">
+  </app-privileges-modal>
+</div>

@@ -1,0 +1,70 @@
+<div class="page">
+  <!-- Header -->
+  <header class="hero">
+    <div class="hero__crumbs">Home / <b>config</b> / <span>role</span></div>
+    <h1 class="hero__title">Roles</h1>
+    <p class="hero__subtitle">Gestión de perfiles y permisos básicos del sistema</p>
+
+    <div class="hero__actions">
+      <label class="field">
+        <span>Estado</span>
+        <select [(ngModel)]="filtro">
+          <option>Todos</option>
+          <option>Activo</option>
+          <option>Inactivo</option>
+        </select>
+      </label>
+
+      <button class="btn btn--ghost" (click)="load()">Visualizar</button>
+    </div>
+  </header>
+
+  <!-- Card -->
+  <section class="card">
+    <header class="card__head">
+      <span>Listado</span>
+    </header>
+
+    <div class="table">
+      <div class="table__head">
+        <div class="c c--num">#</div>
+        <div class="c">Descripción</div>
+        <div class="c c--estado">Estado</div>
+        <div class="c c--opts">Opciones</div>
+      </div>
+
+      <!-- Skeleton (cuando loading) -->
+      <ng-container *ngIf="loading">
+        <div class="sk-row"></div>
+        <div class="sk-row"></div>
+        <div class="sk-row"></div>
+      </ng-container>
+
+      <!-- Filas -->
+      <ng-container *ngIf="!loading">
+        <div class="table__row" *ngFor="let r of listFiltered(); trackBy: trackById">
+          <div class="c c--num">{{ r.id_rol }}</div>
+          <div class="c"><strong>{{ r.nombre }}</strong></div>
+          <div class="c c--estado">
+            <span class="badge" [class.badge--ok]="r.estado==='1'" [class.badge--bad]="r.estado==='0'">
+              {{ r.estado==='1' ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+          <div class="c c--opts">
+            <button type="button" class="ic-btn" (click)="configurarAcceso(r)" aria-label="Configurar acceso">⚙</button>
+          </div>
+        </div>
+
+
+        <div class="empty" *ngIf="listFiltered().length===0">Sin resultados</div>
+      </ng-container>
+    </div>
+
+    <!-- Paginación (dummy) -->
+    <footer class="pager">
+      <button class="pg-btn">‹</button>
+      <span class="pg-current">1</span>
+      <button class="pg-btn">›</button>
+    </footer>
+  </section>
+</div>

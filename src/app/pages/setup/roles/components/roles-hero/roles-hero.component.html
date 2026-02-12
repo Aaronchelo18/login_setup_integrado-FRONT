@@ -1,0 +1,33 @@
+<header class="hero-panel">
+  <div class="hero-top">
+    <nav class="crumbs">
+      <a routerLink="/home">Home</a><span>/</span><span>config</span><span>/</span>
+      <span class="current">role</span>
+    </nav>
+    <h1>Roles</h1>
+    <p class="subtitle">Gestión de perfiles y permisos básicos del sistema</p>
+  </div>
+
+  <!-- Fila de controles -->
+  <div class="hero-controls">
+    <!-- Izquierda: Estado -->
+    <div class="field inline">
+      <label for="estadoTop">Estado</label>
+      <select id="estadoTop" [(ngModel)]="estado" (change)="estadoChange.emit(estado)">
+        <option value="todos">Todos</option>
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+      </select>
+    </div>
+
+    <!-- Derecha: Botones -->
+    <div class="actions">
+      <button type="button" class="btn secondary wide" (click)="visualizar.emit()">
+        Visualizar
+      </button>
+      <button type="button" class="btn primary wide" (click)="nuevo.emit()">
+        Nuevo
+      </button>
+    </div>
+  </div>
+</header>

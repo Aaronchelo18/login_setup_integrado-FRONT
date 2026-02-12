@@ -1,0 +1,87 @@
+<div class="page">
+  <!-- Título -->
+  <h1 class="page-title">Asignación de Roles a Usuarios</h1>
+  <p class="page-subtitle">Busque un usuario para gestionar sus roles asignados.</p>
+
+  <!-- Card de búsqueda -->
+  <div class="search-card">
+    <div class="search-header">
+      <span class="search-icon">👤</span>
+      <strong>Buscar Usuario</strong>
+    </div>
+    <p class="search-desc">Ingrese el nombre, apellidos o correo del usuario para localizarlo.</p>
+
+    <div class="search-row">
+      <input
+        #q
+        type="text"
+        [value]="query"
+        (input)="onInput(q.value)"
+        (keyup.enter)="onSearchClick()"
+        placeholder="Buscar usuario por nombre o correo…"
+        class="search-input" />
+
+      <button
+        type="button"
+        class="btn-search"
+        (click)="onSearchClick()"
+        [disabled]="qlen < minLen || loading">
+        Buscar
+      </button>
+    </div>
+
+    <small class="hint" *ngIf="qlen > 0 && qlen < minLen">
+      Escribe al menos {{ minLen }} caracteres
+    </small>
+  </div>
+
+  <!-- Resultados -->
+  <div class="results" *ngIf="items.length > 0 || loading">
+    <div class="results-header">
+      <strong>Resultados</strong>
+      <span class="badge" *ngIf="!loading">{{ total }} usuario{{ total !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <!-- Lista de usuarios como cards -->
+    <div class="user-list">
+      <div class="user-card" *ngFor="let r of items; trackBy: trackById">
+        <div class="user-info">
+          <div class="avatar">{{ initials(r) }}</div>
+          <div class="user-detail">
+            <span class="user-name">{{ fullName(r) }}</span>
+            <span class="user-mail">{{ r?.correo || 'Sin correo' }}</span>
+          </div>
+        </div>
+        <button class="btn-assign" (click)="openAssign(r)" title="Asignar roles">
+          ⚙️ Roles
+        </button>
+      </div>
+    </div>
+
+    <!-- Paginación simple -->
+    <div class="pagination" *ngIf="lastPage > 1">
+      <button class="pg-btn" (click)="goPrev()" [disabled]="page === 1">‹ Anterior</button>
+      <span class="pg-info">Página {{ page }} de {{ lastPage }}</span>
+      <button class="pg-btn" (click)="goNext()" [disabled]="page === lastPage">Siguiente ›</button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-bar" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Buscando usuarios…</span>
+    </div>
+  </div>
+
+  <!-- Estado vacío después de buscar -->
+  <div class="empty-state" *ngIf="!loading && items.length === 0 && qlen >= minLen">
+    <span class="empty-icon">🔍</span>
+    <p>No se encontraron usuarios para "<strong>{{ query }}</strong>"</p>
+  </div>
+
+  <!-- Modal de asignación de roles -->
+  <app-roles-assign-modal
+    *ngIf="assignUser"
+    [user]="assignUser"
+    (closed)="onAssignClosed($event)">
+  </app-roles-assign-modal>
+</div>

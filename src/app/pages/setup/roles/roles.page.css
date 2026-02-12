@@ -1,0 +1,7 @@
+:host{
+  --blue-900:#0b2f58; --blue-800:#0d3b6f; --blue-700:#12508f; --blue-600:#1e88e5;
+  --ink:#0f172a; --muted:#6b7280; --line:#d9e1ee; --fill:#eef3f9; --head:#e7edf7;
+  display:block; background:var(--fill); min-height:100%; padding:18px 20px 24px;
+}
+.screen{ width:100%; margin:0; padding:0 16px; box-sizing:border-box; }
+@media(min-width:1400px){ .screen{padding:0 24px;} }

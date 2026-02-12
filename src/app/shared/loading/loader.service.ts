@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Subscription, timer } from 'rxjs';
+import { delay } from 'rxjs/operators'; // ✅ Importante
 
 @Injectable({ providedIn: 'root' })
 export class LoaderService {
@@ -9,8 +10,11 @@ export class LoaderService {
   private _isLoading$ = new BehaviorSubject<boolean>(false);
   private _label$ = new BehaviorSubject<string>('Procesando…');
 
-  isLoading$ = this._isLoading$.asObservable();
-  label$ = this._label$.asObservable();
+  /** * ✅ SOLUCIÓN AL ERROR NG0100:
+   * Aplicamos delay(0) para diferir la notificación al siguiente ciclo.
+   */
+  isLoading$ = this._isLoading$.asObservable().pipe(delay(0));
+  label$ = this._label$.asObservable().pipe(delay(0));
 
   private activeRequests = 0;
   private navInProgress = false;
@@ -27,12 +31,12 @@ export class LoaderService {
     this.setVisible(true);
     this.armMaxSafety();
   }
+
   endNavigation(): void {
     this.navInProgress = false;
     this.tryHide();
   }
 
-  /** Marca el inicio de una petición “global” (muestra overlay si es la primera). */
   requestStarted(label?: string): void {
     if (label) this.setLabel(label);
     const wasIdle = this.activeRequests === 0 && !this.navInProgress;
@@ -45,13 +49,14 @@ export class LoaderService {
     }
   }
 
-  /** Marca el fin de una petición. Oculta overlay cuando ya no quedan pendientes. */
   requestEnded(): void {
     if (this.activeRequests > 0) this.activeRequests--;
     this.tryHide();
   }
 
-  setLabel(label: string) { this._label$.next(label); }
+  setLabel(label: string) { 
+    this._label$.next(label); 
+  }
 
   // ===== internos =====
   private setVisible(v: boolean) {

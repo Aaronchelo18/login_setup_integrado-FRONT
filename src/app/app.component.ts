@@ -1,19 +1,29 @@
 import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import {
-  Router, RouterOutlet,
-  NavigationStart, NavigationEnd, NavigationCancel, NavigationError,
+  Router,
+  RouterOutlet,
+  NavigationStart,
+  NavigationEnd,
+  NavigationCancel,
+  NavigationError,
 } from '@angular/router';
-import { NgIf, AsyncPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { LoaderService } from './shared/loading/loader.service';
 import { LoadingOverlayComponent } from './shared/loading/loading-overlay.component';
+import { ToastHostComponent } from './shared/interfaces/toast/toast-host.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NgIf, AsyncPipe, LoadingOverlayComponent],
+  imports: [
+    CommonModule, 
+    RouterOutlet,
+    LoadingOverlayComponent,
+    ToastHostComponent,
+  ],
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
@@ -22,10 +32,10 @@ export class AppComponent implements OnInit {
 
   private readonly router = inject(Router);
   private readonly loader = inject(LoaderService);
-  private readonly destroyRef = inject(DestroyRef); // Necesario para takeUntilDestroyed
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    // 1. CAPTURAR TOKEN DE LA URL (Sincronización entre puertos)
+    // 1. CAPTURAR TOKEN DE LA URL
     const urlParams = new URLSearchParams(window.location.search);
     const authParam = urlParams.get('auth');
 
@@ -34,11 +44,9 @@ export class AppComponent implements OnInit {
         const data = JSON.parse(atob(authParam));
         localStorage.setItem('code5-access-token', data.access_token);
         localStorage.setItem('code5-authorization-token', data.authz_token);
-        
-        // Limpiamos la URL sin recargar la página
         window.history.replaceState({}, document.title, window.location.pathname);
       } catch (e) {
-        console.error("Error procesando token de integración");
+        console.error('Error procesando token de integración');
       }
     }
 
@@ -49,21 +57,28 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    // 3. LÓGICA DEL LOADER (Corregida para evitar error NG0203)
+    // 3. LÓGICA DEL LOADER PARA NAVEGACIÓN
     this.isLoading$ = this.loader.isLoading$;
     this.loaderLabel$ = this.loader.label$;
 
     this.router.events
-      .pipe(takeUntilDestroyed(this.destroyRef)) // Pasamos destroyRef aquí
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((ev) => {
         if (ev instanceof NavigationStart) {
-          this.loader.startNavigation('Cargando…');
+          // ✅ SOLUCIÓN AL ERROR NG0100:
+          // Usamos setTimeout para mover la actualización al siguiente ciclo de ejecución.
+          setTimeout(() => {
+            this.loader.startNavigation('Cargando…');
+          });
         } else if (
           ev instanceof NavigationEnd ||
           ev instanceof NavigationCancel ||
           ev instanceof NavigationError
         ) {
-          this.loader.endNavigation();
+          // ✅ Hacemos lo mismo al finalizar para mantener la consistencia.
+          setTimeout(() => {
+            this.loader.endNavigation();
+          });
         }
       });
   }

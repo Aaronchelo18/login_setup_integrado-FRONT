@@ -1,4 +1,12 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { 
+  Component, 
+  Input, 
+  Output, 
+  EventEmitter, 
+  OnChanges, 
+  SimpleChanges, 
+  CUSTOM_ELEMENTS_SCHEMA 
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs/operators';
 import Swal from 'sweetalert2';
@@ -10,9 +18,9 @@ import { ModuleHierarchyService, ModuleNode } from '../../core/services/module-h
   imports: [CommonModule],
   templateUrl: './modules-hierarchy-modal.component.html',
   styleUrls: ['./modules-hierarchy-modal.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ModulesHierarchyModalComponent implements OnChanges {
-  /** Id del módulo raíz desde el que abrirás la jerarquía */
   @Input() rootId!: number;
   @Input() titulo = 'Jerarquía de Módulos';
 
@@ -25,7 +33,6 @@ export class ModulesHierarchyModalComponent implements OnChanges {
 
   constructor(private api: ModuleHierarchyService) {}
 
-  // Cargar solo cuando rootId esté definido (>0)
   ngOnChanges(changes: SimpleChanges): void {
     if ('rootId' in changes) {
       const v = Number(this.rootId);
@@ -46,96 +53,142 @@ export class ModulesHierarchyModalComponent implements OnChanges {
       });
   }
 
-  // ---------- acciones ----------
+  // Estructura común para los formularios de SweetAlert2
+  private getFormHtml(node?: Partial<ModuleNode>): string {
+    return `
+      <div class="swal-custom-form" style="text-align:left; font-family: 'Inter', sans-serif;">
+        <div style="margin-bottom: 12px;">
+          <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:5px;">Nombre del Módulo</label>
+          <input id="sw-nombre" class="swal2-input" style="width:100%; margin:0; font-size:14px; height:38px;" value="${node?.nombre || ''}" placeholder="Ej. Reportes de Ventas">
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:5px;">Ruta / URL</label>
+          <input id="sw-url" class="swal2-input" style="width:100%; margin:0; font-size:14px; height:38px;" value="${node?.url || ''}" placeholder="/ventas/reportes">
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:5px;">Icono (Iconify)</label>
+          <input id="sw-img" class="swal2-input" style="width:100%; margin:0; font-size:14px; height:38px;" value="${node?.imagen || 'lucide:box'}" placeholder="lucide:box">
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; padding-top:8px;">
+          <label class="swal-switch" style="position:relative; display:inline-block; width:34px; height:20px;">
+            <input type="checkbox" id="sw-estado" ${node?.estado !== '0' ? 'checked' : ''} style="opacity:0; width:0; height:0;">
+            <span class="slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:34px;"></span>
+          </label>
+          <span style="font-size:13px; font-weight:500; color:#1e293b;">Módulo Activo</span>
+        </div>
+        <style>
+          .swal2-input:focus { border-color: #2563eb !important; box-shadow: 0 0 0 2px rgba(37,99,235,0.1) !important; }
+          #sw-estado:checked + .slider { background-color: #2563eb; }
+          .slider:before { position:absolute; content:''; height:14px; width:14px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%; }
+          #sw-estado:checked + .slider:before { transform: translateX(14px); }
+        </style>
+      </div>
+    `;
+  }
+
   addChild(parent?: ModuleNode): void {
     const id_parent = parent ? parent.id_modulo : this.rootId;
+    
     Swal.fire({
-      title: 'Nuevo módulo',
-      input: 'text',
-      inputLabel: 'Nombre del módulo',
-      inputPlaceholder: 'Ej. Cotizaciones',
+      title: 'Nuevo Sub-módulo',
+      html: this.getFormHtml(),
       showCancelButton: true,
-      confirmButtonText: 'Crear',
+      confirmButtonText: 'Crear Módulo',
       cancelButtonText: 'Cancelar',
-      inputValidator: v => (!v?.trim() ? 'Ingresa un nombre' : null),
+      confirmButtonColor: '#2563eb',
+      reverseButtons: true,
+      preConfirm: () => {
+        const nombre = (document.getElementById('sw-nombre') as HTMLInputElement).value.trim();
+        if (!nombre) return Swal.showValidationMessage('El nombre es obligatorio');
+        return {
+          id_parent: id_parent, // Cambiado a id_parent según estándares previos
+          nombre: nombre,
+          url: (document.getElementById('sw-url') as HTMLInputElement).value.trim() || null,
+          imagen: (document.getElementById('sw-img') as HTMLInputElement).value.trim() || 'lucide:box',
+          estado: (document.getElementById('sw-estado') as HTMLInputElement).checked ? '1' : '0'
+        };
+      }
     }).then(res => {
       if (!res.isConfirmed) return;
-      const nombre = String(res.value).trim();
-
       this.loading = true;
-      this.api.createNode({
-        parent_id: id_parent,
-        nombre,
-        url: null,
-        imagen: 'default.png',
-        estado: '1',
-      })
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe({
-        next: () => { this.toastOk('Nodo creado'); this.reload(); this.saved.emit(); },
-        error: err => this.alertError(err, 'No se pudo crear el nodo'),
+      this.api.createNode(res.value).pipe(finalize(() => this.loading = false)).subscribe({
+        next: () => { this.toastOk('Módulo registrado'); this.reload(); this.saved.emit(); },
+        error: err => this.alertError(err, 'No se pudo crear el módulo'),
       });
     });
   }
 
-  rename(node: ModuleNode): void {
+  editNode(node: ModuleNode): void {
     Swal.fire({
-      title: 'Renombrar módulo',
-      input: 'text',
-      inputValue: node.nombre,
+      title: 'Editar Módulo',
+      html: this.getFormHtml(node),
       showCancelButton: true,
-      confirmButtonText: 'Guardar',
+      confirmButtonText: 'Actualizar',
       cancelButtonText: 'Cancelar',
-      inputValidator: v => (!v?.trim() ? 'Ingresa un nombre' : null),
+      confirmButtonColor: '#2563eb',
+      reverseButtons: true,
+      preConfirm: () => {
+        const nombre = (document.getElementById('sw-nombre') as HTMLInputElement).value.trim();
+        if (!nombre) return Swal.showValidationMessage('El nombre es obligatorio');
+        return {
+          nombre: nombre,
+          url: (document.getElementById('sw-url') as HTMLInputElement).value.trim() || null,
+          imagen: (document.getElementById('sw-img') as HTMLInputElement).value.trim() || 'lucide:box',
+          estado: (document.getElementById('sw-estado') as HTMLInputElement).checked ? '1' : '0'
+        };
+      }
     }).then(res => {
       if (!res.isConfirmed) return;
-      const nombre = String(res.value).trim();
-      if (nombre === node.nombre) return;
-
       this.loading = true;
-      this.api.patchNode(node.id_modulo, { nombre })
-        .pipe(finalize(() => (this.loading = false)))
-        .subscribe({
-          next: () => { this.toastOk('Nombre actualizado'); this.reload(); this.saved.emit(); },
-          error: err => this.alertError(err, 'No se pudo actualizar'),
-        });
+      this.api.patchNode(node.id_modulo, res.value).pipe(finalize(() => this.loading = false)).subscribe({
+        next: () => { this.toastOk('Cambios guardados'); this.reload(); this.saved.emit(); },
+        error: err => this.alertError(err, 'No se pudo actualizar'),
+      });
     });
   }
 
   remove(node: ModuleNode): void {
     Swal.fire({
-      title: `Eliminar "${node.nombre}"`,
-      text: 'Se eliminará el nodo. Verifica relaciones antes de continuar.',
+      title: '¿Confirmar eliminación?',
+      html: `Estás por eliminar <b>${node.nombre}</b>.<br><small style="color:#ef4444">Esta acción afectará a todos los sub-módulos dependientes.</small>`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      reverseButtons: true,
-      focusCancel: true,
+      cancelButtonText: 'Mantener',
+      confirmButtonColor: '#ef4444',
+      reverseButtons: true
     }).then(r => {
       if (!r.isConfirmed) return;
-
       this.loading = true;
-      this.api.deleteNode(node.id_modulo)
-        .pipe(finalize(() => (this.loading = false)))
-        .subscribe({
-          next: () => { this.toastOk('Nodo eliminado'); this.reload(); this.saved.emit(); },
-          error: err => this.alertError(err, 'No se pudo eliminar'),
-        });
+      this.api.deleteNode(node.id_modulo).pipe(finalize(() => this.loading = false)).subscribe({
+        next: () => { this.toastOk('Módulo eliminado'); this.reload(); this.saved.emit(); },
+        error: err => this.alertError(err, 'No se pudo eliminar'),
+      });
     });
   }
 
   cerrar(): void { this.closed.emit(); }
-
-  // ---------- ui utils ----------
   trackById = (_: number, n: ModuleNode) => n.id_modulo;
 
   private toastOk(title: string): void {
-    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title,
-      showConfirmButton: false, timer: 1300, timerProgressBar: true });
+    Swal.fire({ 
+      toast: true, 
+      position: 'top-end', 
+      icon: 'success', 
+      title, 
+      showConfirmButton: false, 
+      timer: 2000,
+      background: '#fff',
+      color: '#1e293b'
+    });
   }
+
   private alertError(err: any, fallback: string): void {
-    const msg = err?.error?.message || fallback;
-    Swal.fire({ icon: 'error', title: 'Error', text: msg });
+    Swal.fire({ 
+      icon: 'error', 
+      title: 'Operación fallida', 
+      text: err?.error?.message || fallback,
+      confirmButtonColor: '#2563eb'
+    });
   }
 }

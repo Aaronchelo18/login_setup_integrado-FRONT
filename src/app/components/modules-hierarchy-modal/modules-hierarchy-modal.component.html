@@ -1,106 +1,80 @@
-<div class="mh-modal">
-  <div class="mh-head">
-    <h3>{{ titulo }}</h3>
-    <button class="btn-close" (click)="cerrar()" aria-label="Cerrar">×</button>
-  </div>
+<div class="mh-overlay">
+  <div class="mh-modal">
+    <div class="mh-head">
+      <div class="title-group">
+        <div class="icon-wrapper">
+          <iconify-icon icon="lucide:layout-tree"></iconify-icon>
+        </div>
+        <div class="text-wrapper">
+          <h3>{{ titulo }}</h3>
+          <p>Organiza la estructura de navegación</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="cerrar()" title="Cerrar">
+        <iconify-icon icon="lucide:x"></iconify-icon>
+      </button>
+    </div>
 
-  <div class="mh-toolbar">
-    <button class="btn btn-primary" (click)="addChild()">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 5v14M5 12h14"></path>
-      </svg>
-      Agregar Módulo Raíz/Hijo
-    </button>
-  </div>
+    <div class="mh-toolbar">
+      <button class="btn btn-primary btn-sm" (click)="addChild()">
+        <iconify-icon icon="lucide:plus-circle"></iconify-icon>
+        <span>Nuevo Módulo Raíz</span>
+      </button>
+    </div>
 
-  <div *ngIf="loading" class="mh-state">Cargando…</div>
-  <div *ngIf="!loading && error" class="mh-error">{{ error }}</div>
+    <div *ngIf="error" class="mh-error">
+      <iconify-icon icon="lucide:alert-circle"></iconify-icon>
+      <span>{{ error }}</span>
+    </div>
 
-  <div class="mh-body" *ngIf="!loading && !error">
-    <ul class="tree root">
-      <ng-container *ngFor="let n of tree; trackBy: trackById">
-        <li class="ti">
-          <input *ngIf="n.children?.length" class="tgl" type="checkbox" [attr.id]="'t'+n.id_modulo" checked />
+    <div class="mh-body" *ngIf="!loading && !error">
+      <ul class="tree-container">
+        <ng-container *ngFor="let n of tree; trackBy: trackById">
+          <ng-container *ngTemplateOutlet="nodeItemTpl; context: {$implicit: n}"></ng-container>
+        </ng-container>
+      </ul>
+    </div>
 
-          <div class="row">
-            <label *ngIf="n.children?.length" class="caret" [attr.for]="'t'+n.id_modulo"></label>
-            <span class="node" [class.no-children]="!n.children.length">{{ n.nombre }}</span>
-
-            <div class="actions">
-              <button class="tiny add" (click)="addChild(n)" title="Agregar hijo" aria-label="Agregar">
-                <svg viewBox="0 0 24 24" width="15" height="15" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 5v14M5 12h14"></path>
-                </svg>
-              </button>
-
-              <button class="tiny edit" (click)="rename(n)" title="Renombrar" aria-label="Renombrar">
-                <svg viewBox="0 0 24 24" width="15" height="15" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path>
-                </svg>
-              </button>
-
-              <button class="tiny danger" (click)="remove(n)" title="Eliminar" aria-label="Eliminar">
-                <svg viewBox="0 0 24 24" width="15" height="15" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                  <path d="M10 11v6M14 11v6"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <ul class="branch" *ngIf="n.children?.length">
-            <ng-container *ngTemplateOutlet="nodeTpl; context: {$implicit: n.children}"></ng-container>
-          </ul>
-        </li>
-      </ng-container>
-    </ul>
-  </div>
-
-  <div class="mh-foot">
-    <button class="btn" (click)="cerrar()">Cancelar</button>
-    <button class="btn btn-primary" (click)="cerrar()">Cerrar</button>
+    <div class="mh-foot">
+      <button class="btn btn-ghost" (click)="cerrar()">Cancelar</button>
+      <button class="btn btn-primary shadow-sm" (click)="cerrar()">Guardar Cambios</button>
+    </div>
   </div>
 </div>
 
-<!-- ======= plantilla recursiva ======= -->
-<ng-template #nodeTpl let-list>
-  <ng-container *ngFor="let c of list; trackBy: trackById">
-    <li class="ti">
-      <input *ngIf="c.children?.length" class="tgl" type="checkbox" [attr.id]="'t'+c.id_modulo" checked />
+<ng-template #nodeItemTpl let-node>
+  <li class="tree-item">
+    <input *ngIf="node.children?.length" class="tgl-input" type="checkbox" [attr.id]="'t'+node.id_modulo" checked />
+    
+    <div class="node-row" [class.is-inactive]="node.estado == '0'">
+      <div class="node-main">
+        <label *ngIf="node.children?.length" class="caret-custom" [attr.for]="'t'+node.id_modulo">
+          <iconify-icon icon="lucide:chevron-right" class="caret-icon"></iconify-icon>
+        </label>
+        <div *ngIf="!node.children?.length" class="caret-spacer">
+           <div class="dot-spacer"></div>
+        </div>
 
-      <div class="row">
-        <label *ngIf="c.children?.length" class="caret" [attr.for]="'t'+c.id_modulo"></label>
-        <span class="node" [class.no-children]="!c.children?.length">{{ c.nombre }}</span>
+        <iconify-icon [icon]="node.estado == '0' ? 'lucide:eye-off' : (node.children?.length ? 'lucide:folder' : 'lucide:file-code')" 
+                      class="type-icon"></iconify-icon>
 
-        <div class="actions">
-          <button class="tiny add" (click)="addChild(c)" title="Agregar hijo" aria-label="Agregar">
-            <svg viewBox="0 0 24 24" width="15" height="15" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 5v14M5 12h14"></path>
-            </svg>
-          </button>
-
-          <button class="tiny edit" (click)="rename(c)" title="Renombrar" aria-label="Renombrar">
-            <svg viewBox="0 0 24 24" width="15" height="15" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"></path>
-              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path>
-            </svg>
-          </button>
-
-          <button class="tiny danger" (click)="remove(c)" title="Eliminar" aria-label="Eliminar">
-            <svg viewBox="0 0 24 24" width="15" height="15" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-              <path d="M10 11v6M14 11v6"></path>
-            </svg>
-          </button>
+        <div class="node-content">
+          <span class="node-name">{{ node.nombre }}</span>
+          <span class="node-url" *ngIf="node.url">{{ node.url }}</span>
         </div>
       </div>
 
-      <ul class="branch" *ngIf="c.children?.length">
-        <ng-container *ngTemplateOutlet="nodeTpl; context: {$implicit: c.children}"></ng-container>
-      </ul>
-    </li>
-  </ng-container>
+      <div class="node-actions">
+        <button class="action-btn add" (click)="addChild(node)" title="Añadir"><iconify-icon icon="lucide:plus"></iconify-icon></button>
+        <button class="action-btn edit" (click)="editNode(node)" title="Editar"><iconify-icon icon="lucide:edit-3"></iconify-icon></button>
+        <button class="action-btn delete" (click)="remove(node)" title="Eliminar"><iconify-icon icon="lucide:trash"></iconify-icon></button>
+      </div>
+    </div>
+
+    <ul class="tree-branch" *ngIf="node.children?.length">
+      <ng-container *ngFor="let child of node.children; trackBy: trackById">
+        <ng-container *ngTemplateOutlet="nodeItemTpl; context: {$implicit: child}"></ng-container>
+      </ng-container>
+    </ul>
+  </li>
 </ng-template>

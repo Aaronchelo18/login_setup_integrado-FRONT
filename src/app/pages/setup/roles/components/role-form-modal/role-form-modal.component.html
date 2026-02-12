@@ -1,0 +1,60 @@
+<div class="modal-backdrop" *ngIf="visible" (click)="onBackdrop($event)" (keydown.escape)="onEsc()" tabindex="-1">
+  <div class="modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+    <!-- Header gris, bien cuadrado -->
+    <header class="modal-head">
+      <h3>{{ editing ? 'Editar Rol' : 'Nuevo Rol' }}</h3>
+      <button type="button" class="close-btn" (click)="close.emit()" [disabled]="saving" aria-label="Cerrar">×</button>
+    </header>
+
+    <form [formGroup]="form" class="modal-body" (ngSubmit)="save()">
+      <div *ngIf="serverError" class="server-error">{{ serverError }}</div>
+
+      <div class="form-row">
+        <label for="nombreInput">Nombre:</label>
+        <input
+          #first
+          id="nombreInput"
+          type="text"
+          formControlName="nombre"
+          maxlength="64"
+          placeholder="Ej. Coordinador"
+          [disabled]="saving"
+        />
+        <small class="err" *ngIf="form.get('nombre')?.touched && form.get('nombre')?.errors">
+          {{
+            serverFieldErrors['nombre'] ||
+              (form.get('nombre')?.hasError('required')
+                ? 'Requerido.'
+                : form.get('nombre')?.hasError('maxlength')
+                ? 'Máximo 64 caracteres.'
+                : '')
+          }}
+        </small>
+      </div>
+
+      <div class="form-row inline" *ngIf="!hideEstado">
+        <label for="estadoCheck">Estado:</label>
+        <label class="switch">
+          <input
+            id="estadoCheck"
+            type="checkbox"
+            formControlName="estado"
+            aria-label="Estado del rol"
+            [disabled]="saving"
+          />
+          <span class="track"><span class="knob"></span></span>
+        </label>
+      </div>
+
+      <footer class="modal-actions">
+        <button type="button" class="btn outline danger" (click)="close.emit()" [disabled]="saving">
+          Cancelar
+        </button>
+        <button type="submit" class="btn outline primary" [disabled]="form.invalid || saving || !canMutate">
+          <span *ngIf="!saving">Guardar</span>
+          <span *ngIf="saving">Guardando…</span>
+        </button>
+      </footer>
+    </form>
+  </div>
+</div>

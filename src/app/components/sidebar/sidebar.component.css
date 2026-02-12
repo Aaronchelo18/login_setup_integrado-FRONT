@@ -36,7 +36,14 @@
 .divider.section{ margin:12px 16px 14px 16px; }
 
 /* ---------- Submenú ---------- */
-.submenu{ list-style:none; margin:0 0 4px 0; padding:0 0 0 14px; }
+.submenu{ list-style:none; margin:0 0 4px 0; padding:0 0 0 14px;
+  overflow:hidden;
+  animation: slideDown .2s ease;
+}
+@keyframes slideDown {
+  from { opacity:0; max-height:0; transform:translateY(-6px); }
+  to   { opacity:1; max-height:500px; transform:translateY(0); }
+}
 .submenu .child a{
   padding:8px 14px; font-weight:600; font-size:12.5px; color:#dfe7f3; border-radius:6px;
 }

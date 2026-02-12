@@ -2,14 +2,12 @@
   <header class="mod-header">
     <div class="header-titles">
       <nav class="breadcrumb">Sistema de Accesos / Configuración</nav>
-      
       <div class="title-container">
-        <button class="btn-back" (click)="goBack()" title="Volver al panel principal">
+        <button class="btn-back" (click)="goBack()" title="Volver">
           <iconify-icon icon="lucide:arrow-left"></iconify-icon>
         </button>
         <h1>Gestión de Módulos</h1>
       </div>
-
       <p>Administre las aplicaciones y la estructura jerárquica del ecosistema.</p>
     </div>
 
@@ -25,29 +23,15 @@
   </div>
 
   <div class="mod-grid">
-    <article
-      class="mod-card"
-      *ngFor="let m of cards; trackBy: trackById"
-      [class.is-disabled]="m.estado == '0'"
-    >
+    <article class="mod-card" *ngFor="let m of cards; trackBy: trackById" [class.is-disabled]="m.estado == '0'">
       <div class="card-accent"></div>
-
       <div class="card-inner">
         <div class="card-main-info">
           <div class="icon-container">
             <ng-container [ngSwitch]="iconType(m.imagen)">
-              <iconify-icon
-                *ngSwitchCase="'iconify'"
-                [icon]="m.imagen"
-              ></iconify-icon>
-              <img
-                *ngSwitchCase="'img'"
-                [src]="iconUrl(m.imagen)"
-                alt="icono"
-              />
-              <span *ngSwitchDefault class="letter-icon">{{
-                firstLetter(m.nombre)
-              }}</span>
+              <iconify-icon *ngSwitchCase="'iconify'" [icon]="m.imagen"></iconify-icon>
+              <img *ngSwitchCase="'img'" [src]="iconUrl(m.imagen)" alt="icono" />
+              <span *ngSwitchDefault class="letter-icon">{{ firstLetter(m.nombre) }}</span>
             </ng-container>
           </div>
 
@@ -61,11 +45,7 @@
             <code class="module-url">{{ m.url || "Sin ruta asignada" }}</code>
           </div>
 
-          <button
-            class="delete-trigger"
-            title="Eliminar Módulo"
-            (click)="onDelete(m)"
-          >
+          <button class="delete-trigger" title="Eliminar Módulo" (click)="onDelete(m)">
             <iconify-icon icon="lucide:trash-2"></iconify-icon>
           </button>
         </div>
@@ -74,20 +54,14 @@
 
         <div class="card-footer">
           <div class="quick-tools">
-            <button
-              class="tool-btn"
-              (click)="openEditModal(m)"
-              title="Editar información"
-            >
+            <button class="tool-btn" (click)="openEditModal(m)" title="Editar información">
               <iconify-icon icon="lucide:edit-3"></iconify-icon>
             </button>
-            <button
-              class="tool-btn"
-              (click)="openHierarchy(m)"
-              title="Estructura Jerárquica"
-            >
-              <iconify-icon icon="lucide:git-branch"></iconify-icon>
+            
+            <button class="tool-btn" (click)="openHierarchy(m)" title="Estructura Jerárquica">
+              <iconify-icon icon="lucide:git-graph" style="color: #2563eb;"></iconify-icon>
             </button>
+
             <button class="tool-btn" title="Configuración avanzada">
               <iconify-icon icon="lucide:settings"></iconify-icon>
             </button>
@@ -126,8 +100,7 @@
         (onDemandParents)="fetchParents()"
         (close)="closeCreateModal()"
         (submit)="onCreateSubmit($event)"
-      >
-      </app-module-modulo-form-dialog>
+      ></app-module-modulo-form-dialog>
     </div>
 
     <div class="modal-content" [class.active]="openEdit">
@@ -142,15 +115,14 @@
         (onDemandParents)="fetchParents()"
         (close)="closeEditModal()"
         (submit)="onEditSubmit($event)"
-      >
-      </app-module-modulo-form-dialog>
+      ></app-module-modulo-form-dialog>
     </div>
 
     <div class="modal-content" [class.active]="openHier">
       <app-modules-hierarchy-modal
         *ngIf="openHier && selectedMod"
         [rootId]="selectedMod!.id_modulo"
-        [titulo]="selectedMod!.nombre"
+        [titulo]="'Estructura: ' + selectedMod!.nombre"
         (closed)="closeHierarchy()"
         (saved)="onHierarchySaved()"
       ></app-modules-hierarchy-modal>

@@ -39,14 +39,17 @@ export class ModuleHierarchyService {
   constructor(private http: HttpClient) {}
 
   /** GET /jerarquia/tree */
-  getTree(opts?: { root_id?: number; include_inactives?: boolean }): Observable<ModuleNode[]> {
+// Asegúrate de que el mapping de la respuesta coincida con tu estructura de Laravel
+getTree(opts?: { root_id?: number; include_inactives?: boolean }): Observable<ModuleNode[]> {
     let params = new HttpParams();
     if (opts?.root_id != null) params = params.set('root_id', String(opts.root_id));
-    if (opts?.include_inactives != null) params = params.set('include_inactives', String(opts.include_inactives));
+    // Importante: Laravel suele esperar 1 o 0 para booleanos en query params
+    if (opts?.include_inactives != null) params = params.set('include_inactives', opts.include_inactives ? '1' : '0');
+    
     return this.http
-      .get<{ success: boolean; data: ModuleNode[] }>(`${this.base}/tree`, { params })
-      .pipe(map(r => r?.data ?? []));
-  }
+      .get<any>(`${this.base}/tree`, { params })
+      .pipe(map(r => r.data || r)); // Soporte para r.data o respuesta directa
+}
 
   /** POST /jerarquia */
   createNode(body: CreateNodeDto) { return this.http.post(`${this.base}`, body); }

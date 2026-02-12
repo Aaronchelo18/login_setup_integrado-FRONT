@@ -39,7 +39,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.loadPadres());
 
-    // abrir solo el grupo que coincida con la URL (si aplica)
+    // abrir solo el grupo que coincida con la URL (sin cerrar los ya abiertos)
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd), takeUntil(this.destroy$))
       .subscribe(() => this.expandForCurrentUrl());
@@ -54,9 +54,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.moduloSrv.getPadres().subscribe({
       next: (data: ModNode[]) => {
         this.padres = (data ?? []).filter((m) => String(m.estado) === '1');
-        // Estado inicial: NINGÚN grupo abierto
-        this.open = {};
-        // Si la URL actual corresponde a algún grupo/página, lo abrimos
+        // Preservar estado abierto de grupos que ya existían
+        // Solo abrir el que coincida con la URL actual
         this.expandForCurrentUrl();
       },
       error: (err) => console.error('Error cargando módulos:', err),
@@ -100,11 +99,30 @@ export class SidebarComponent implements OnInit, OnDestroy {
     // Excepción "setup/modulos" la tratamos solo en hijos (ver HTML)
   }
 
+  // Mapa de rutas para módulos con URL NULL en BD (por nombre normalizado)
+  private readonly fallbackRoutes: Record<string, string> = {
+    'roles x users': '/management/users',
+    'accesos a usuarios': '/userprograma/gestion-accesos',
+    'demo': '/home',
+  };
+
   /**
-   * Link para un hijo usando SIEMPRE el módulo del PADRE:
-   * '/{parentSlug}/{childPage}'
+   * Link para un hijo:
+   * - Si el hijo tiene URL en BD, la usamos directamente como ruta absoluta
+   * - Si no tiene URL, buscamos en fallbackRoutes por nombre
+   * - Si tampoco, construimos '/{parentSlug}/{childPage}' (legacy)
    */
   linkForChild(parent: ModNode, child: ModNode): string | null {
+    const rawUrl = (child?.url || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
+    if (rawUrl) {
+      return '/' + rawUrl;
+    }
+    // Fallback por nombre
+    const nombre = (child?.nombre || '').trim().toLowerCase();
+    if (this.fallbackRoutes[nombre]) {
+      return this.fallbackRoutes[nombre];
+    }
+    // Fallback legacy: /{parentSlug}/{childPage}
     const parentSlug = this.getSlug(parent?.url);
     const childPage  = this.getPage(child?.url);
     if (!parentSlug || !childPage) return null;
@@ -113,14 +131,21 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   // ==== abrir el grupo que coincida con la URL actual (si aplica)
   private expandForCurrentUrl(): void {
-    const cur = this.router.url; // ej: '/gapp/roles'
+    const cur = this.router.url; // ej: '/setup/accesos/roles'
     for (const p of this.padres) {
       const pSlug = this.getSlug(p.url);
+
+      // Coincidencia directa con slug del padre
       const parentMatch = pSlug && cur.startsWith('/' + pSlug + '/');
 
+      // Coincidencia con URL completa de algún hijo (usando URL directa de BD)
       const childMatch = (p.children ?? []).some((c) => {
+        const rawUrl = (c.url || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
+        if (rawUrl) {
+          return cur === '/' + rawUrl || cur.startsWith('/' + rawUrl + '/');
+        }
         const page = this.getPage(c.url);
-        return page && cur.startsWith('/' + pSlug + '/' + page);
+        return page && pSlug && cur.startsWith('/' + pSlug + '/' + page);
       });
 
       if (parentMatch || childMatch) {

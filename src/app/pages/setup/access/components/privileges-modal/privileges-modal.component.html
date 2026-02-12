@@ -1,0 +1,70 @@
+<!-- Backdrop -->
+<div class="priv-modal-backdrop" *ngIf="show">
+  <!-- Modal -->
+  <div
+    class="priv-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="priv-title"
+    aria-describedby="priv-sub"
+  >
+    <!-- Head -->
+    <div class="priv-head">
+      <div class="priv-head__title">
+        <span class="priv-head__icon">🗝</span>
+        <h3 id="priv-title">Privilegios del módulo</h3>
+      </div>
+      <button class="priv-close" type="button" (click)="close()" aria-label="Cerrar">✕</button>
+    </div>
+
+    <!-- Sub / meta -->
+    <div class="priv-sub" id="priv-sub">
+      <span class="priv-sub__label">Módulo:</span>
+      <span class="priv-sub__value">{{ target?.nombre || '' }}</span>
+    </div>
+
+    <!-- Content -->
+    <div class="priv-content" *ngIf="!loading; else loadingTpl">
+      <div *ngIf="error" class="priv-alert priv-alert--error">
+        <span class="priv-alert__dot"></span>{{ error }}
+      </div>
+
+      <!-- Toolbar -->
+      <div class="priv-toolbar">
+        <label class="priv-checkall">
+          <input
+            #chk
+            type="checkbox"
+            [checked]="allChecked"
+            (change)="toggleAll(chk.checked)"
+          >
+          <span>Seleccionar todo</span>
+        </label>
+      </div>
+
+      <!-- Lista -->
+      <div class="priv-list">
+        <label class="priv-item" *ngFor="let p of list">
+          <input class="priv-item__check" type="checkbox" [(ngModel)]="p.checked">
+          <span class="priv-item__text">{{ p.nombre }}</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <ng-template #loadingTpl>
+      <div class="priv-loading">
+        <span class="priv-spinner" aria-hidden="true"></span>
+        Cargando…
+      </div>
+    </ng-template>
+
+    <!-- Foot -->
+    <div class="priv-foot">
+      <button class="btn btn--ghost" type="button" (click)="close()">Cancelar</button>
+      <button class="btn" type="button" (click)="save()" [disabled]="saving || loading">
+        {{ saving ? 'Guardando…' : 'Asignar' }}
+      </button>
+    </div>
+  </div>
+</div>

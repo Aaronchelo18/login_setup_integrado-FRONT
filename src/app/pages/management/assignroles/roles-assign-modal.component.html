@@ -1,0 +1,93 @@
+<div class="modal-backdrop" (click)="close()"></div>
+
+<div class="modal" role="dialog" aria-modal="true">
+  <!-- CABECERA -->
+  <header class="modal-head">
+    <div class="title">
+      <div class="avatar">🔐</div>
+      <div class="info">
+        <span class="label">ASIGNAR ROLES A</span>
+        <div class="user">
+          {{ displayName(user) }}
+          <small *ngIf="user?.correo">({{ user.correo }})</small>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="close" (click)="close()">×</button>
+  </header>
+
+  <!-- CUERPO -->
+  <section class="modal-body">
+    <!-- Mensajes de estado -->
+    <div *ngIf="successMsg" class="alert ok">
+      <div class="ico-check">✔</div>
+      <div class="txt">
+        <span>{{ successMsg }}</span>
+        <small>Los cambios ya fueron guardados.</small>
+      </div>
+    </div>
+
+    <div *ngIf="errorMsg" class="alert err">
+      <div class="ico-check">!</div>
+      <div class="txt">
+        <span>{{ errorMsg }}</span>
+        <small>Intenta nuevamente en unos segundos.</small>
+      </div>
+    </div>
+
+    <div class="tools">
+      <input
+        type="text"
+        name="searchRole"
+        placeholder="Buscar rol…"
+        [(ngModel)]="q" />
+    </div>
+
+    <!-- Loading con animación -->
+    <div *ngIf="loading" class="loading loading-inline">
+      <span class="spinner"></span>
+      <span>Cargando roles…</span>
+    </div>
+
+    <div *ngIf="!loading && filtered.length === 0" class="empty">
+      No hay roles para mostrar
+    </div>
+
+    <div *ngIf="!loading && filtered.length > 0" class="roles-grid">
+      <label class="role-item" *ngFor="let r of filtered">
+        <input
+          type="checkbox"
+          [checked]="selected.has(r.id_rol)"
+          (change)="toggle(r.id_rol, $any($event.target).checked)" />
+        <span>{{ r.nombre }}</span>
+      </label>
+    </div>
+  </section>
+
+  <!-- PIE -->
+  <footer class="modal-foot">
+    <button
+      type="button"
+      class="btn ghost"
+      (click)="close()"
+      [disabled]="saving">
+      Cancelar
+    </button>
+
+    <button
+      type="button"
+      class="btn primary"
+      (click)="save()"
+      [disabled]="saving || loading">
+      <ng-container *ngIf="!saving; else savingTpl">
+        Asignar
+      </ng-container>
+
+      <ng-template #savingTpl>
+        <span class="btn-spinner spinner"></span>
+        Guardando…
+      </ng-template>
+    </button>
+  </footer>
+</div>
