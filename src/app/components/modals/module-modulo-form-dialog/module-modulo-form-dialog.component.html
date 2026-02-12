@@ -3,11 +3,11 @@
     
     <header class="dlg-head">
       <div class="head-content">
-        <h3>{{ mode === 'create' ? 'Crear Módulo' : 'Editar Módulo' }}</h3>
-        <p class="head-subtitle">Define la posición jerárquica y estética del acceso.</p>
+        <h3>{{ mode === 'create' ? 'Crear Nuevo Módulo' : 'Editar Configuración' }}</h3>
+        <p class="head-subtitle">Gestiona la jerarquía y visualización del acceso</p>
       </div>
       <button type="button" class="dlg-close" (click)="onCancel()">
-        <iconify-icon icon="heroicons:x-mark-20-solid"></iconify-icon>
+        <iconify-icon icon="heroicons:x-mark-20-solid" width="20"></iconify-icon>
       </button>
     </header>
 
@@ -26,8 +26,8 @@
         <div class="field">
           <label class="label">Nivel de Profundidad</label>
           <div class="input-container">
-            <iconify-icon icon="heroicons:bars-3-bottom-left" class="inner-icon"></iconify-icon>
-            <select class="input-control select-type" formControlName="nivel">
+            <iconify-icon icon="heroicons:list-bullet" class="inner-icon"></iconify-icon>
+            <select class="input-control hierarchy-dropdown" formControlName="nivel">
               <option *ngFor="let n of niveles" [value]="n.value">{{ n.label }}</option>
             </select>
           </div>
@@ -36,24 +36,20 @@
         <div class="field">
           <label class="label">Módulo Superior (Padre)</label>
           <div class="input-container">
-            <iconify-icon icon="heroicons:folder-open" class="inner-icon"></iconify-icon>
-            
+            <iconify-icon icon="heroicons:chevron-double-up" class="inner-icon"></iconify-icon>
             <select 
-              class="input-control select-type hierarchy-dropdown" 
+              class="input-control hierarchy-dropdown" 
               formControlName="id_parent"
               (focus)="onFocusSelect()">
               
               <ng-container *ngIf="loading; else dataLoaded">
-                <option [ngValue]="null" disabled selected>Cargando módulos...</option>
+                <option [ngValue]="null" disabled selected>Cargando datos...</option>
               </ng-container>
 
               <ng-template #dataLoaded>
-                <option [ngValue]="null" *ngIf="form.get('nivel')?.value == 0">Establecer como Raíz</option>
-                <option [ngValue]="null" *ngIf="form.get('nivel')?.value != 0" disabled>-- Seleccione el Padre --</option>
-                
-                <option *ngFor="let m of filteredModules" 
-                        [ngValue]="m.id_modulo" 
-                        [class]="'lv-' + m.nivel">
+                <option [ngValue]="null" *ngIf="form.get('nivel')?.value == 0">Nivel Raíz (Principal)</option>
+                <option [ngValue]="null" *ngIf="form.get('nivel')?.value != 0" disabled>-- Seleccione un padre --</option>
+                <option *ngFor="let m of filteredModules" [ngValue]="m.id_modulo" [class]="'lv-' + m.nivel">
                   {{ formatPath(m) }}
                 </option>
               </ng-template>
@@ -65,12 +61,12 @@
           <label class="label">Ruta de Acceso (URL)</label>
           <div class="input-container prefix-box">
             <span class="prefix">/</span>
-            <input class="input-control has-prefix" type="text" placeholder="setup/gapp/dashboard" formControlName="url" />
+            <input class="input-control has-prefix" type="text" placeholder="ejemplo/ruta" formControlName="url" />
           </div>
         </div>
 
         <div class="field">
-          <label class="label">Visibilidad</label>
+          <label class="label">Estado de Visibilidad</label>
           <div class="toggle-group">
             <label class="toggle-item">
               <input type="radio" value="1" formControlName="estado">
@@ -88,17 +84,19 @@
           <div class="icon-card-preview">
             <div class="icon-box">
               <ng-container *ngIf="isImg(form.get('imagen')?.value); else iconify">
-                <img [src]="iconPreview(form.get('imagen')?.value)" alt="icon">
+                <img [src]="iconPreview(form.get('imagen')?.value)" alt="icon" style="max-width: 32px;">
               </ng-container>
               <ng-template #iconify>
-                <iconify-icon [attr.icon]="iconPreview(form.get('imagen')?.value)" width="32"></iconify-icon>
+                <iconify-icon [attr.icon]="iconPreview(form.get('imagen')?.value)" width="28"></iconify-icon>
               </ng-template>
             </div>
             <div class="icon-meta">
-              <span class="icon-name">{{ form.get('imagen')?.value || 'Ninguno' }}</span>
-              <span class="icon-label">Icono identificador</span>
+              <span class="icon-name">{{ form.get('imagen')?.value || 'default-icon' }}</span>
+              <span class="icon-label">Icono de representación</span>
             </div>
-            <button type="button" class="btn-picker" (click)="openPicker()">Cambiar Icono</button>
+            <button type="button" class="btn-picker" (click)="openPicker()">
+                Cambiar Icono
+            </button>
           </div>
         </div>
 
@@ -107,8 +105,8 @@
       <footer class="dlg-actions">
         <button type="button" class="btn-cancel" (click)="onCancel()">Cancelar</button>
         <button type="submit" class="btn-submit" [disabled]="creating || form.invalid">
-          <span *ngIf="!creating">{{ mode === 'edit' ? 'Guardar Cambios' : 'Crear Acceso' }}</span>
-          <iconify-icon *ngIf="creating" icon="line-md:loading-twotone-loop" class="spin"></iconify-icon>
+          <span *ngIf="!creating">{{ mode === 'edit' ? 'Actualizar Módulo' : 'Crear Módulo' }}</span>
+          <iconify-icon *ngIf="creating" icon="svg-spinners:ring-resize" width="20"></iconify-icon>
         </button>
       </footer>
     </form>

@@ -38,18 +38,10 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
     this.initForm();
   }
 
-  // GETTER PARA FILTRAR PADRES SEGÚN EL NIVEL SELECCIONADO
   get filteredModules(): ModuloOption[] {
     const nivelSeleccionado = Number(this.form.get('nivel')?.value);
-    
-    if (nivelSeleccionado === 1) {
-      // Para un Nivel 1, el padre DEBE ser Nivel 0
-      return this.modules.filter(m => Number(m.nivel) === 0);
-    }
-    if (nivelSeleccionado === 2) {
-      // Para un Nivel 2, el padre DEBE ser Nivel 1
-      return this.modules.filter(m => Number(m.nivel) === 1);
-    }
+    if (nivelSeleccionado === 1) return this.modules.filter(m => Number(m.nivel) === 0);
+    if (nivelSeleccionado === 2) return this.modules.filter(m => Number(m.nivel) === 1);
     return [];
   }
 
@@ -61,7 +53,6 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
         parentCtrl?.setValue(null);
       } else {
         parentCtrl?.enable();
-        // Solo resetear si el valor actual no existe en la lista filtrada
         const currentVal = parentCtrl?.value;
         const isValid = this.filteredModules.some(m => m.id_modulo === currentVal);
         if (!isValid) parentCtrl?.setValue(null);
@@ -106,29 +97,20 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
       imagen: m.imagen || 'material-symbols:settings-outline',
       estado: String(m.estado)
     });
-    
     const parentCtrl = this.form.get('id_parent');
     if (Number(m.nivel) === 0) parentCtrl?.disable(); else parentCtrl?.enable();
   }
 
   onFocusSelect() {
-    if (this.modules.length === 0 && !this.loading) {
-      this.onDemandParents.emit();
-    }
+    if (this.modules.length === 0 && !this.loading) this.onDemandParents.emit();
   }
 
-  // NUEVA LÓGICA DE INDICADOR DE PADRE
   formatPath(m: any): string {
     if (!m) return '';
-    
-    // Si es nivel 1, el padre es nivel 0 (Raíz)
     if (m.nivel === 1) {
       const parent = this.modules.find(p => p.id_modulo === m.id_parent);
-      const parentName = parent ? parent.nombre : 'RAÍZ';
-      return `[${parentName}] > ${m.nombre}`;
+      return `${parent ? parent.nombre : 'RAÍZ'} ➔ ${m.nombre}`;
     }
-
-    // Si es nivel 0, solo mostrar el nombre
     return m.nombre;
   }
 
