@@ -18,7 +18,7 @@
         <span class="material-symbols-rounded">{{ kpi.icon }}</span>
       </div>
       <span class="metric-label">{{ kpi.label }}</span>
-      <h2 class="metric-value">{{ kpi.value }}</h2>
+      <h2 class="metric-value">{{ kpi.value || 0 }}</h2>
     </div>
   </section>
 

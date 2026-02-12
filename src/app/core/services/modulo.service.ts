@@ -17,19 +17,42 @@ export class ModuloService {
     this.silentHttp = new HttpClient(handler);
   }
 
-getModulosAdmin(): Observable<Modulo[]> {
-  // Ajusta esta ruta para que coincida EXACTAMENTE con tu Route::get en Laravel
-  const url = `${this.apiRoot}/modulo/admin-list`; 
-  return this.http.get<any>(url).pipe(
-    map(r => r.data || []),
-    catchError((err) => {
-      console.error("Error en listado-admin:", err); // Para debug
-      return of([]);
-    })
-  );
-}
+  /** ===== MÉTODOS PARA DASHBOARD (KPIs) ===== */
 
-  // REINCORPORADO PARA COMPATIBILIDAD CON OTROS COMPONENTES
+  getStatsRoles(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiRoot}/config/setup/roles`).pipe(
+      map(r => r.data || r || []),
+      catchError(() => of([]))
+    );
+  }
+
+  getStatsUsers(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiRoot}/managemt/users`).pipe(
+      map(r => r.data || r || []),
+      catchError(() => of([]))
+    );
+  }
+
+  getStatsAccesos(): Observable<any[]> {
+    return this.http.get<any>(`${this.apiRoot}/management/user-access/reports`).pipe(
+      map(r => r.data || r || []),
+      catchError(() => of([]))
+    );
+  }
+
+  /** ===== MÉTODOS DE MÓDULOS ===== */
+
+  getModulosAdmin(): Observable<Modulo[]> {
+    const url = `${this.apiRoot}/modulo/admin-list`; 
+    return this.http.get<any>(url).pipe(
+      map(r => r.data || []),
+      catchError((err) => {
+        console.error("Error en listado-admin:", err);
+        return of([]);
+      })
+    );
+  }
+
   getModulos(opts?: { id_persona?: number | null, force?: boolean }): Observable<Modulo[]> {
     let params = new HttpParams();
     if (opts?.id_persona) params = params.set('id_persona', opts.id_persona.toString());
@@ -39,13 +62,12 @@ getModulosAdmin(): Observable<Modulo[]> {
     );
   }
 
-// Verifica si es /config/setup/modulos/opciones o solo /modulo/opciones
-getOptions(include_inactives = true): Observable<ModuloOption[]> {
-  return this.silentHttp.get<any>(`${this.base}/opciones?include_inactives=${include_inactives}`).pipe(
-    map(r => r.data || r), 
-    catchError(() => of([]))
-  );
-}
+  getOptions(include_inactives = true): Observable<ModuloOption[]> {
+    return this.silentHttp.get<any>(`${this.base}/opciones?include_inactives=${include_inactives}`).pipe(
+      map(r => r.data || r), 
+      catchError(() => of([]))
+    );
+  }
 
   create(data: any): Observable<any> {
     return this.http.post(this.base, data).pipe(tap(() => this.reloadSidebar$.next()));

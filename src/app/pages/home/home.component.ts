@@ -1,6 +1,8 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { ModuloService } from '../../core/services/modulo.service'; // Ajusta la ruta si es necesario
 
 @Component({
   selector: 'app-home',
@@ -10,12 +12,14 @@ import { RouterModule, Router } from '@angular/router';
   styleUrls: ['./home.component.css'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+  
+  // Mantenemos la estructura pero inicializamos los valores en 0
   kpis = [
-    { value: 12,  label: 'Total Roles',         icon: 'verified_user',   color: 'blue'   },
-    { value: 248, label: 'Usuarios Activos',    icon: 'group',           color: 'orange' },
-    { value: 8,   label: 'Módulos',             icon: 'widgets',         color: 'turq'   },
-    { value: 156, label: 'Accesos Configurados', icon: 'lock_open',        color: 'green'  },
+    { key: 'roles',   value: 0, label: 'Total Roles',          icon: 'verified_user',   color: 'blue'   },
+    { key: 'users',   value: 0, label: 'Usuarios Activos',     icon: 'group',           color: 'orange' },
+    { key: 'modulos', value: 0, label: 'Módulos',              icon: 'widgets',         color: 'turq'   },
+    { key: 'accesos', value: 0, label: 'Accesos Configurados', icon: 'lock_open',       color: 'green'  },
   ];
 
   activity = [
@@ -25,10 +29,43 @@ export class HomeComponent {
     { title: 'Acceso modificado', desc: 'Rol Operador actualizado', time: 'Hace 2 días' },
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private api: ModuloService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadStats();
+  }
+
+  loadStats(): void {
+    // forkJoin lanza las 4 peticiones en paralelo
+    forkJoin({
+      roles: this.api.getStatsRoles(),
+      users: this.api.getStatsUsers(),
+      modulos: this.api.getModulosAdmin(),
+      accesos: this.api.getStatsAccesos()
+    }).subscribe({
+      next: (res) => {
+        this.updateKpi('roles', res.roles.length);
+        this.updateKpi('users', res.users.length);
+        this.updateKpi('modulos', res.modulos.length);
+        this.updateKpi('accesos', res.accesos.length);
+      },
+      error: (err) => {
+        console.error('Error al cargar estadísticas del dashboard:', err);
+      }
+    });
+  }
+
+  private updateKpi(key: string, newValue: number): void {
+    const kpi = this.kpis.find(k => k.key === key);
+    if (kpi) {
+      kpi.value = newValue;
+    }
+  }
 
   goToShell(): void {
-    // Redirige a la raíz o al shell del sistema
     this.router.navigate(['/']); 
   }
 }

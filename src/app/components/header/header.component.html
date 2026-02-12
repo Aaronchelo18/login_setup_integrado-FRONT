@@ -29,21 +29,41 @@
 
 <div class="panel-usuario-derecho" *ngIf="panelAbierto && usuario">
   <div class="panel-header">
+    <ion-icon name="person-circle-outline" class="header-icon"></ion-icon>
     <h3>Datos del Usuario</h3>
   </div>
   
   <div class="panel-body">
     <div class="info-row">
-      <span class="label">Nombre:</span>
+      <div class="info-label-box">
+        <ion-icon name="person-outline"></ion-icon>
+        <span class="label">Nombre</span>
+      </div>
       <span class="value">{{ usuario.nombres || usuario.person?.nombre }}</span>
     </div>
+
     <div class="info-row">
-      <span class="label">Apellidos:</span>
+      <div class="info-label-box">
+        <ion-icon name="people-outline"></ion-icon>
+        <span class="label">Apellidos</span>
+      </div>
       <span class="value">{{ (usuario.person?.paterno || '') + ' ' + (usuario.person?.materno || '') }}</span>
     </div>
+
     <div class="info-row">
-      <span class="label">Correo:</span>
-      <span class="value">{{ usuario.correo }}</span>
+      <div class="info-label-box">
+        <ion-icon name="mail-outline"></ion-icon>
+        <span class="label">Correo</span>
+      </div>
+      <span class="value email-value">{{ usuario.correo }}</span>
+    </div>
+
+    <div class="info-row" *ngIf="codigo">
+      <div class="info-label-box">
+        <ion-icon name="barcode-outline"></ion-icon>
+        <span class="label">Código</span>
+      </div>
+      <span class="value">{{ codigo }}</span>
     </div>
   </div>
 
