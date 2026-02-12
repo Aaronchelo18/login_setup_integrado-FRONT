@@ -44,10 +44,6 @@ $bg-modal: #ffffff;
   }
 }
 
-.mh-toolbar { 
-  padding: 12px 20px; background: #fafafa; border-bottom: 1px solid $border-color;
-}
-
 .mh-body {
   position: relative; padding: 15px 20px; overflow-y: auto; flex-grow: 1;
   &::-webkit-scrollbar { width: 5px; }
@@ -92,7 +88,7 @@ $bg-modal: #ffffff;
   display: flex; align-items: center; justify-content: center; border-radius: 6px;
   font-size: 16px;
   &:hover { background: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-  &.add { color: $success; } &.edit { color: $primary; } &.delete { color: $danger; }
+  &.edit { color: $primary; } &.delete { color: $danger; }
 }
 
 /* PIE Y BOTONES */
@@ -113,7 +109,6 @@ $bg-modal: #ffffff;
     background: white; color: $text-muted; border-color: #e2e8f0;
     &:hover { background: #f8fafc; color: $text-main; }
   }
-  &-sm { padding: 5px 12px; font-size: 12px; }
 }
 
 .skeleton-tree {

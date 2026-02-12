@@ -15,13 +15,6 @@
       </button>
     </div>
 
-    <div class="mh-toolbar">
-      <button class="btn btn-primary btn-sm" (click)="addChild()">
-        <iconify-icon icon="lucide:plus-circle"></iconify-icon>
-        <span>Nuevo Módulo Raíz</span>
-      </button>
-    </div>
-
     <div class="mh-body">
       <div *ngIf="loading" class="top-progress-container">
         <div class="top-progress-bar"></div>
@@ -84,9 +77,12 @@
       </div>
 
       <div class="node-actions">
-        <button class="action-btn add" (click)="addChild(node)" title="Añadir"><iconify-icon icon="lucide:plus"></iconify-icon></button>
-        <button class="action-btn edit" (click)="editNode(node)" title="Editar"><iconify-icon icon="lucide:edit-3"></iconify-icon></button>
-        <button class="action-btn delete" (click)="remove(node)" title="Eliminar"><iconify-icon icon="lucide:trash"></iconify-icon></button>
+        <button class="action-btn edit" (click)="editNode(node)" title="Editar">
+          <iconify-icon icon="lucide:edit-3"></iconify-icon>
+        </button>
+        <button class="action-btn delete" (click)="remove(node)" title="Eliminar">
+          <iconify-icon icon="lucide:trash"></iconify-icon>
+        </button>
       </div>
     </div>
 

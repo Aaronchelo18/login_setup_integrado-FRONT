@@ -105,8 +105,7 @@
       <footer class="dlg-actions">
         <button type="button" class="btn-cancel" (click)="onCancel()">Cancelar</button>
         <button type="submit" class="btn-submit" [disabled]="creating || form.invalid">
-          <span *ngIf="!creating">{{ mode === 'edit' ? 'Actualizar Módulo' : 'Crear Módulo' }}</span>
-          <iconify-icon *ngIf="creating" icon="svg-spinners:ring-resize" width="20"></iconify-icon>
+          {{ mode === 'edit' ? 'Actualizar Módulo' : 'Crear Módulo' }}
         </button>
       </footer>
     </form>

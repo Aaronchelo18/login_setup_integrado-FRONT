@@ -88,37 +88,6 @@ export class ModulesHierarchyModalComponent implements OnChanges {
     `;
   }
 
-  addChild(parent?: ModuleNode): void {
-    const id_parent = parent ? parent.id_modulo : this.rootId;
-    Swal.fire({
-      title: 'Nuevo Sub-módulo',
-      html: this.getFormHtml(),
-      showCancelButton: true,
-      confirmButtonText: 'Crear Módulo',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#2563eb',
-      reverseButtons: true,
-      preConfirm: () => {
-        const nombre = (document.getElementById('sw-nombre') as HTMLInputElement).value.trim();
-        if (!nombre) return Swal.showValidationMessage('El nombre es obligatorio');
-        return {
-          id_parent,
-          nombre,
-          url: (document.getElementById('sw-url') as HTMLInputElement).value.trim() || null,
-          imagen: (document.getElementById('sw-img') as HTMLInputElement).value.trim() || 'lucide:box',
-          estado: (document.getElementById('sw-estado') as HTMLInputElement).checked ? '1' : '0'
-        };
-      }
-    }).then(res => {
-      if (!res.isConfirmed) return;
-      this.loading = true;
-      this.api.createNode(res.value).pipe(finalize(() => this.loading = false)).subscribe({
-        next: () => { this.toastOk('Módulo registrado'); this.reload(); this.saved.emit(); },
-        error: err => this.alertError(err, 'No se pudo crear el módulo'),
-      });
-    });
-  }
-
   editNode(node: ModuleNode): void {
     Swal.fire({
       title: 'Editar Módulo',
@@ -132,7 +101,7 @@ export class ModulesHierarchyModalComponent implements OnChanges {
         const nombre = (document.getElementById('sw-nombre') as HTMLInputElement).value.trim();
         if (!nombre) return Swal.showValidationMessage('El nombre es obligatorio');
         return {
-          nombre,
+          nombre: nombre,
           url: (document.getElementById('sw-url') as HTMLInputElement).value.trim() || null,
           imagen: (document.getElementById('sw-img') as HTMLInputElement).value.trim() || 'lucide:box',
           estado: (document.getElementById('sw-estado') as HTMLInputElement).checked ? '1' : '0'
