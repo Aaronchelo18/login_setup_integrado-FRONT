@@ -7,8 +7,6 @@ $text-main: #0f172a;
 $text-muted: #64748b;
 $bg-body: #ffffff;
 
-
-
 .mh-overlay {
   position: fixed;
   inset: 0;
@@ -21,8 +19,8 @@ $bg-body: #ffffff;
 
 .mh-modal {
   width: 100%;
-  max-width: 580px; // Reducido para ser más compacto
-  max-height: 70vh; // Altura reducida
+  max-width: 580px;
+  max-height: 70vh;
   background: $bg-body;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -74,7 +72,7 @@ $bg-body: #ffffff;
   padding: 15px 20px;
   overflow-y: auto;
   flex-grow: 1;
-  background: white; // Eliminado patrón de puntos
+  background: white;
 
   &::-webkit-scrollbar { width: 5px; }
   &::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
@@ -88,7 +86,7 @@ $bg-body: #ffffff;
   list-style: none;
   padding-left: 24px;
   margin-left: 8px;
-  border-left: 1px solid #e2e8f0; // Línea sólida más fina
+  border-left: 1px solid #e2e8f0;
 }
 
 .node-row {
@@ -104,7 +102,24 @@ $bg-body: #ffffff;
     background: #f8fafc;
     .node-actions { opacity: 1; }
   }
-  &.is-inactive { opacity: 0.5; }
+
+  /* ESTILO DINÁMICO PARA INACTIVOS */
+  &.is-inactive {
+    .node-name {
+      text-decoration: line-through;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+    .node-url {
+      color: #cbd5e1;
+      text-decoration: line-through;
+    }
+    .type-icon {
+      color: #cbd5e1;
+    }
+    background: rgba($border-color, 0.3);
+    opacity: 0.7;
+  }
 }
 
 .node-main {
@@ -115,8 +130,8 @@ $bg-body: #ffffff;
 
 .node-content {
   display: flex; flex-direction: column;
-  .node-name { font-size: 13px; font-weight: 500; color: $text-main; }
-  .node-url { font-size: 10px; color: $text-muted; font-family: monospace; }
+  .node-name { font-size: 13.5px; font-weight: 600; color: $text-main; transition: 0.2s; }
+  .node-url { font-size: 10.5px; color: $text-muted; font-family: monospace; transition: 0.2s; }
 }
 
 .caret-custom {
