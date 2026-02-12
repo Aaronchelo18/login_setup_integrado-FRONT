@@ -22,22 +22,41 @@
       </button>
     </div>
 
-    <div *ngIf="error" class="mh-error">
-      <iconify-icon icon="lucide:alert-circle"></iconify-icon>
-      <span>{{ error }}</span>
-    </div>
+    <div class="mh-body">
+      <div *ngIf="loading" class="top-progress-container">
+        <div class="top-progress-bar"></div>
+      </div>
 
-    <div class="mh-body" *ngIf="!loading && !error">
-      <ul class="tree-container">
+      <div *ngIf="error" class="mh-error-box">
+        <iconify-icon icon="lucide:alert-circle"></iconify-icon>
+        <span>{{ error }}</span>
+      </div>
+
+      <ul class="tree-container" *ngIf="tree.length > 0; else noData">
         <ng-container *ngFor="let n of tree; trackBy: trackById">
           <ng-container *ngTemplateOutlet="nodeItemTpl; context: {$implicit: n}"></ng-container>
         </ng-container>
       </ul>
+
+      <ng-template #noData>
+        <div class="skeleton-tree" *ngIf="loading && tree.length === 0">
+          <div class="sk-item" style="width: 80%"></div>
+          <div class="sk-item" style="width: 60%; margin-left: 20px"></div>
+          <div class="sk-item" style="width: 90%"></div>
+        </div>
+        <div class="empty-state" *ngIf="!loading">
+          <iconify-icon icon="lucide:database-zap"></iconify-icon>
+          <p>Sin módulos configurados</p>
+        </div>
+      </ng-template>
     </div>
 
     <div class="mh-foot">
       <button class="btn btn-ghost" (click)="cerrar()">Cancelar</button>
-      <button class="btn btn-primary shadow-sm" (click)="cerrar()">Guardar Cambios</button>
+      <button class="btn btn-primary shadow-sm" (click)="cerrar()">
+        <iconify-icon icon="lucide:check-circle"></iconify-icon>
+        <span>Guardar Cambios</span>
+      </button>
     </div>
   </div>
 </div>

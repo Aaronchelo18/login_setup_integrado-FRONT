@@ -49,11 +49,13 @@ export class ModulesHierarchyModalComponent implements OnChanges {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: rows => this.tree = rows ?? [],
-        error: e => { console.error(e); this.error = 'No se pudo cargar la jerarquía.'; }
+        error: e => { 
+          console.error(e); 
+          this.error = 'No se pudo sincronizar la jerarquía.'; 
+        }
       });
   }
 
-  // Estructura común para los formularios de SweetAlert2
   private getFormHtml(node?: Partial<ModuleNode>): string {
     return `
       <div class="swal-custom-form" style="text-align:left; font-family: 'Inter', sans-serif;">
@@ -88,7 +90,6 @@ export class ModulesHierarchyModalComponent implements OnChanges {
 
   addChild(parent?: ModuleNode): void {
     const id_parent = parent ? parent.id_modulo : this.rootId;
-    
     Swal.fire({
       title: 'Nuevo Sub-módulo',
       html: this.getFormHtml(),
@@ -101,8 +102,8 @@ export class ModulesHierarchyModalComponent implements OnChanges {
         const nombre = (document.getElementById('sw-nombre') as HTMLInputElement).value.trim();
         if (!nombre) return Swal.showValidationMessage('El nombre es obligatorio');
         return {
-          id_parent: id_parent, // Cambiado a id_parent según estándares previos
-          nombre: nombre,
+          id_parent,
+          nombre,
           url: (document.getElementById('sw-url') as HTMLInputElement).value.trim() || null,
           imagen: (document.getElementById('sw-img') as HTMLInputElement).value.trim() || 'lucide:box',
           estado: (document.getElementById('sw-estado') as HTMLInputElement).checked ? '1' : '0'
@@ -131,7 +132,7 @@ export class ModulesHierarchyModalComponent implements OnChanges {
         const nombre = (document.getElementById('sw-nombre') as HTMLInputElement).value.trim();
         if (!nombre) return Swal.showValidationMessage('El nombre es obligatorio');
         return {
-          nombre: nombre,
+          nombre,
           url: (document.getElementById('sw-url') as HTMLInputElement).value.trim() || null,
           imagen: (document.getElementById('sw-img') as HTMLInputElement).value.trim() || 'lucide:box',
           estado: (document.getElementById('sw-estado') as HTMLInputElement).checked ? '1' : '0'
@@ -172,23 +173,15 @@ export class ModulesHierarchyModalComponent implements OnChanges {
 
   private toastOk(title: string): void {
     Swal.fire({ 
-      toast: true, 
-      position: 'top-end', 
-      icon: 'success', 
-      title, 
-      showConfirmButton: false, 
-      timer: 2000,
-      background: '#fff',
-      color: '#1e293b'
+      toast: true, position: 'top-end', icon: 'success', title, 
+      showConfirmButton: false, timer: 2000, background: '#fff', color: '#1e293b'
     });
   }
 
   private alertError(err: any, fallback: string): void {
     Swal.fire({ 
-      icon: 'error', 
-      title: 'Operación fallida', 
-      text: err?.error?.message || fallback,
-      confirmButtonColor: '#2563eb'
+      icon: 'error', title: 'Operación fallida', 
+      text: err?.error?.message || fallback, confirmButtonColor: '#2563eb'
     });
   }
 }
