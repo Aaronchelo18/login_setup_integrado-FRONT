@@ -35,29 +35,15 @@ export class AppComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    // 1. CAPTURAR TOKEN DE LA URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const authParam = urlParams.get('auth');
+    // 1. ELIMINAMOS LA CAPTURA MANUAL DE TOKEN AQUÍ
+    // Porque ahora el LoginComponent se encarga de recibir ?auth=...
+    // y guardarlo correctamente.
 
-    if (authParam) {
-      try {
-        const data = JSON.parse(atob(authParam));
-        localStorage.setItem('code5-access-token', data.access_token);
-        localStorage.setItem('code5-authorization-token', data.authz_token);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } catch (e) {
-        console.error('Error procesando token de integración');
-      }
-    }
+    // 2. ELIMINAMOS EL REDIRECCIONAMIENTO AL 4201
+    // El 'authGuard' en app.routes.ts se encargará de mandar al usuario
+    // a '/login' (en el puerto 4200) si no hay sesión.
 
-    // 2. VALIDACIÓN DE SESIÓN
-    const token = localStorage.getItem('code5-access-token');
-    if (!token) {
-      window.location.href = 'http://localhost:4201/login';
-      return;
-    }
-
-    // 3. LÓGICA DEL LOADER PARA NAVEGACIÓN
+    // 3. LÓGICA DEL LOADER PARA NAVEGACIÓN (Mantenemos tu lógica corregida)
     this.isLoading$ = this.loader.isLoading$;
     this.loaderLabel$ = this.loader.label$;
 
@@ -65,8 +51,7 @@ export class AppComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((ev) => {
         if (ev instanceof NavigationStart) {
-          // ✅ SOLUCIÓN AL ERROR NG0100:
-          // Usamos setTimeout para mover la actualización al siguiente ciclo de ejecución.
+          // Usamos setTimeout para evitar el error ExpressionChangedAfterItHasBeenCheckedError
           setTimeout(() => {
             this.loader.startNavigation('Cargando…');
           });
@@ -75,7 +60,6 @@ export class AppComponent implements OnInit {
           ev instanceof NavigationCancel ||
           ev instanceof NavigationError
         ) {
-          // ✅ Hacemos lo mismo al finalizar para mantener la consistencia.
           setTimeout(() => {
             this.loader.endNavigation();
           });

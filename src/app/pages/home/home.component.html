@@ -1,10 +1,10 @@
 <div class="dashboard-wrapper">
   <header class="page-header">
-    <nav class="breadcrumb">Gestión de accesos / Dashboard</nav>
+    <nav class="breadcrumb">Application Management / Dashboard</nav>
     <div class="header-main">
       <div class="title-group">
         <button class="btn-exit" (click)="goToShell()" title="Regresar al Portal Principal">
-          <iconify-icon icon="lucide:layout-dashboard"></iconify-icon>
+          <iconify-icon icon="lucide:layout-grid"></iconify-icon>
         </button>
         <h1>Panel de Control</h1>
       </div>
@@ -24,22 +24,22 @@
 
   <h3 class="section-title">Acciones de configuración</h3>
   <section class="actions-grid">
-    <button class="action-btn" [routerLink]="['/setup','modulos']">
-      <iconify-icon icon="lucide:grid-3x3" class="btn-icon"></iconify-icon>
-      <span>Gestionar Módulos</span>
+    <button class="action-btn" [routerLink]="['/app', 'application-management', 'reports']">
+      <iconify-icon icon="lucide:file-text" class="btn-icon"></iconify-icon>
+      <span>Ver Reportes</span>
     </button>
 
-    <button class="action-btn" [routerLink]="['/setup','roles']">
+    <button class="action-btn" [routerLink]="['/app', 'iam', 'roles']">
       <iconify-icon icon="lucide:shield" class="btn-icon"></iconify-icon>
       <span>Administrar Roles</span>
     </button>
 
-    <button class="action-btn" [routerLink]="['/setup','rol-acceso']">
+    <button class="action-btn" [routerLink]="['/app', 'application-management', 'access-control']">
       <iconify-icon icon="lucide:key" class="btn-icon"></iconify-icon>
       <span>Asignar Accesos</span>
     </button>
 
-    <button class="action-btn" [routerLink]="['/setup','accesos']">
+    <button class="action-btn" [routerLink]="['/app', 'iam', 'role-assignment']">
       <iconify-icon icon="lucide:users" class="btn-icon"></iconify-icon>
       <span>Asignar Usuarios</span>
     </button>

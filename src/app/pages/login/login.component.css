@@ -1,0 +1,240 @@
+/* === Layout principal === */
+.login-wrapper {
+  display: flex;
+  min-height: 100vh;
+  flex-wrap: nowrap;
+}
+
+/* === Panel izquierdo === */
+.left-panel {
+  flex: 1;
+  background-color: #003366;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.logo-institucional {
+  width: 150px;
+  margin-bottom: 30px;
+}
+
+/* === Panel derecho === */
+.right-panel {
+  flex: 1;
+  background-color: #f7f7f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* === Contenedor del login === */
+.login-container {
+  width: 100%;
+  max-width: 300px;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logo-upeu {
+  width: 200px;
+  margin: 0 auto 20px;
+  display: block;
+}
+
+h2 {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 2px;
+  color: #003366;
+}
+
+/* === Formulario === */
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form label {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+.login-form input {
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* === Ojo de contraseña === */
+.password-wrapper {
+  position: relative;
+  max-width: 400px;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 40px; /* espacio reservado para el icono */
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.password-wrapper .eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #555;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+
+
+/* === Botón principal === */
+.btn-primary {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #003366;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-primary:hover {
+  background-color: #002244;
+}
+
+/* === Link de recuperación === */
+.recuperar-contraseña {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.recuperar-contraseña a {
+  font-size: 13px;
+  color: #003366;
+  text-decoration: none;
+}
+
+.recuperar-contraseña a:hover {
+  text-decoration: underline;
+}
+
+/* === Divider === */
+.divider {
+  text-align: center;
+  margin: 20px 0;
+  position: relative;
+  font-size: 14px;
+  color: #888;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+/* === Botón Google === */
+.google-btn {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 500;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.google-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.google-icon {
+  width: 20px;
+}
+
+/* === Mensaje de error === */
+.mensaje {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* === Footer institucional === */
+.footer-institucional-local {
+  margin-top: 30px;
+  font-size: 13px;
+  text-align: center;
+  color: #555;
+}
+
+.footer-institucional-local .destacado {
+  color: #003366;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+/* === Responsive (para tablets y móviles) === */
+@media screen and (max-width: 768px) {
+  .login-wrapper {
+    flex-direction: column;
+  }
+
+  .left-panel,
+  .right-panel {
+    flex: 1 1 100%;
+    min-height: auto;
+    padding: 20px;
+  }
+
+  .logo-institucional {
+    width: 100px;
+  }
+
+  .logo-upeu {
+    width: 60px;
+  }
+
+  .login-container {
+    padding: 20px;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+}

@@ -1,124 +1,105 @@
-/* ===== Título ===== */
-.menu-title{
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 17px; text-align:center; font-weight:500; color:#fff;
-  margin:0 0 8px 0; padding:0 16px; position:relative;
+/* ===== Título (Regresando al original) ===== */
+.menu-title {
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 17px; text-align: center; font-weight: 500; color: #fff;
+  margin: 0 0 8px 0; padding: 0 16px; position: relative;
 }
-.menu-title::after{
-  content:""; position:absolute; left:24%; transform:translateX(-50%);
-  bottom:-10px; width:50px; height:4px; background:#40c6c6; border-radius:3px;
+.menu-title::after {
+  content: ""; position: absolute; left: 24%; transform: translateX(-50%);
+  bottom: -10px; width: 50px; height: 4px; background: #40c6c6; border-radius: 3px;
 }
 
-:host{ display:block; position:relative; z-index: var(--z-sidebar); }
+:host { display: block; position: relative; z-index: var(--z-sidebar); height: 100vh; }
 
-.sidebar{
-  width:100%; height:100%; background:#002655;
-  display:flex; flex-direction:column; padding:20px 0; box-sizing:border-box;
+.sidebar {
+  width: 100%; height: 100%; background: #002655;
+  display: flex; flex-direction: column; padding: 20px 0; box-sizing: border-box;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ---------- Listas ---------- */
-.menu-list{ list-style:none; overflow-y:auto; padding:0; margin:0; }
-.menu-list li{ margin-bottom:16px; }
+.menu-list { list-style: none; overflow-y: auto; padding: 0 12px; margin: 0; }
+.menu-list li { margin-bottom: 4px; position: relative; }
 
-.menu-list li a, .static-dashboard a{
-  display:flex; align-items:center; gap:8px;
-  padding:10px 16px; color:#fff; text-decoration:none;
-  font-weight:600; font-size:13px; position:relative; cursor:pointer;
-  border-radius:8px; transition: background-color .2s, color .2s, opacity .18s;
+.menu-list li a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; color: rgba(255, 255, 255, 0.7); text-decoration: none;
+  font-weight: 600; font-size: 13px; position: relative; cursor: pointer;
+  border-radius: 8px; transition: all 0.2s ease;
 }
-.menu-list li a:hover, .static-dashboard a:hover{ background:#003263; }
-.label{ font-weight:700; flex-grow:1; white-space:nowrap; }
-.active-indicator{ width:4px; height:100%; background:transparent; position:absolute; left:0; top:0; border:none; }
 
-/* ---------- Separadores ---------- */
-.divider{ height:1px; margin:17px; background:rgba(255,255,255,.12); }
-.divider.group{ margin:10px 0 14px 0; background:rgba(255,255,255,.08); }
-.divider.section{ margin:12px 16px 14px 16px; }
+/* Hover y Active Unificados */
+.menu-list li a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.menu-list li a.active { background: #18365f; color: #fff; }
+
+/* Indicador Activo (Barra Amarilla) */
+.active-indicator {
+  width: 4px; height: 0; background: #ffcc00; 
+  position: absolute; left: 0; top: 50%; 
+  transform: translateY(-50%); border-radius: 0 4px 4px 0;
+  transition: height 0.3s ease;
+}
+.menu-list li a.active .active-indicator,
+.menu-list li a:hover .active-indicator { height: 70%; }
+
+.label { font-weight: 700; flex-grow: 1; white-space: nowrap; transition: opacity 0.2s; }
 
 /* ---------- Submenú ---------- */
-.submenu{ list-style:none; margin:0 0 4px 0; padding:0 0 0 14px;
-  overflow:hidden;
-  animation: slideDown .2s ease;
+.submenu { 
+  list-style: none; margin: 0; padding: 0 0 0 14px;
+  overflow: hidden; animation: slideDown .2s ease;
 }
 @keyframes slideDown {
-  from { opacity:0; max-height:0; transform:translateY(-6px); }
-  to   { opacity:1; max-height:500px; transform:translateY(0); }
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 500px; }
 }
-.submenu .child a{
-  padding:8px 14px; font-weight:600; font-size:12.5px; color:#dfe7f3; border-radius:6px;
-}
-.submenu .child a:hover{ background:#0a3a73; }
-.parent > a.has-children:hover{ background:#003263; }
+.submenu .child a { padding: 8px 14px; color: #dfe7f3; }
 
 /* ---------- Iconos ---------- */
-.mi.icon{ width:18px; min-width:18px; text-align:center; font-size:16px; opacity:.95; }
-.mi.icon.sm{ font-size:14px; opacity:.9; }
-.chevron{ margin-left:auto; font-size:12px; opacity:.8; transition: transform .18s ease; }
-.chevron.open{ transform:rotate(180deg); }
-
-/* ---------- Activo ---------- */
-.menu-list li a.active, .submenu .child a.active, .static-dashboard a.active{ background:#18365f; color:#fff; }
-.menu-list li a.active .mi.icon, .submenu .child a.active .mi.icon, .static-dashboard a.active .mi.icon{ color:#fff; opacity:1; }
-.menu-list li a.active:hover, .submenu .child a.active:hover, .static-dashboard a.active:hover{ background:#18365f; }
-.menu-list li a:hover .active-indicator,
-.menu-list li a.active .active-indicator,
-.static-dashboard a:hover .active-indicator,
-.static-dashboard a.active .active-indicator{ background:#ffcc00; }
-
-/* “pill” sutil hijos activos */
-.submenu .child a.active{
-  border-radius:8px;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+.icon-wrap { 
+  display: flex; align-items: center; justify-content: center; 
+  min-width: 20px; width: 20px; height: 20px; 
 }
+.chevron { margin-left: auto; font-size: 11px; transition: transform .2s; }
+.chevron.open { transform: rotate(180deg); }
 
-/* ======== MODO COLAPSADO (icon-only) ======== */
-/* Se activa porque el ancestro (main-grid) lleva la clase .collapsed */
-:host-context(.collapsed) .sidebar{
-  width: var(--sidebar-w-collapsed, 64px);
-  padding: 12px 0;
-}
+/* ---------- Separadores ---------- */
+.divider { height: 1px; margin: 17px; background: rgba(255,255,255,.12); }
+.divider.group { margin: 8px 0; background: rgba(255,255,255,.05); }
 
-/* Ocultar textos/chevrons/dividers y el título (no ocultamos .submenu: el *ngIf controla visibilidad) */
+/* ==========================================
+   MODO COLAPSADO (CORRECCIÓN DE CENTRADO)
+   ========================================== */
+:host-context(.collapsed) .sidebar { width: 64px; }
+
 :host-context(.collapsed) .menu-title,
 :host-context(.collapsed) .label,
 :host-context(.collapsed) .chevron,
-:host-context(.collapsed) .divider{
-  display: none !important;
+:host-context(.collapsed) .divider { display: none !important; }
+
+:host-context(.collapsed) .menu-list { padding: 0 8px; }
+
+:host-context(.collapsed) .menu-list li a {
+  justify-content: center; /* Forza el centrado horizontal */
+  padding: 12px 0;
+  gap: 0;
 }
 
-/* Items (padres e hijos visibles) centrados, mismo alto */
-:host-context(.collapsed) .menu-list li{ margin:6px 0; }
-:host-context(.collapsed) .menu-list li a,
-:host-context(.collapsed) .submenu .child a{
-  justify-content:center;
-  gap:0;
-  padding:10px 0;
-  min-height:40px;
-  border-radius:10px;
+:host-context(.collapsed) .icon-wrap {
+  margin: 0 auto; /* Asegura que el contenedor del icono no tenga offsets */
 }
 
-/* Caja del icono uniforme */
-:host-context(.collapsed) .icon-wrap{
-  width:24px; height:24px;
-  display:inline-flex; align-items:center; justify-content:center;
+/* El indicador en colapsado debe estar pegado al borde del sidebar */
+:host-context(.collapsed) .active-indicator {
+  left: -8px; /* Ajuste para compensar el padding del ul */
 }
 
-/* Iconos de 20px TODOS (padre/hijo/nieto/imagen/iconify/font) */
-:host-context(.collapsed) iconify-icon,
-:host-context(.collapsed) .icon-wrap img,
-:host-context(.collapsed) .mi.icon{
-  width:20px !important; height:20px !important;
-  min-width:20px !important; min-height:20px !important;
-  font-size:20px !important; line-height:20px !important;
-}
+/* Submenú en colapsado (se ve como lista plana) */
+:host-context(.collapsed) .submenu { padding-left: 0; }
 
-/* Hover/activo en colapsado */
-:host-context(.collapsed) .menu-list li a:hover,
-:host-context(.collapsed) .submenu .child a:hover{ background:#0a3a73; }
-:host-context(.collapsed) .menu-list li a.active,
-:host-context(.collapsed) .submenu .child a.active{ background:#18365f; }
-
-/* ---------- Responsive ---------- */
-@media (max-width: 768px){
-  .sidebar{ width: var(--sidebar-w-collapsed, 64px); }
+/* ======== RESPONSIVE ======== */
+@media (max-width: 768px) {
+  .sidebar { width: 64px; }
+  .menu-title, .label, .chevron, .divider { display: none; }
+  .menu-list li a { justify-content: center; padding: 12px 0; }
 }

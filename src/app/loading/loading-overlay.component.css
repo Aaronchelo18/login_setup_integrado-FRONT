@@ -1,0 +1,40 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 0;
+  margin-top: 10px;
+  background: transparent;
+  animation: fadeIn 0.2s ease-out both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.loader {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(15, 45, 82, 0.15);
+  border-top-color: #0F2D52;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f2d52;
+  margin: 0;
+}

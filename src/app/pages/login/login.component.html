@@ -1,0 +1,75 @@
+<div class="login-wrapper">
+  <div class="left-panel">
+    <img src="assets/img/cordero.png" alt="Logo UPeU" class="logo-institucional" />
+    <h1>Sea bienvenido</h1>
+  </div>
+
+  <div class="right-panel">
+    <div class="login-container">
+      <img src="assets/img/logoupeu.png" alt="Logo UPeU" class="logo-upeu" />
+      <h2>Acceder</h2>
+
+      <form class="login-form" (ngSubmit)="loginManual()">
+        
+        <label for="usuario">Usuario</label>
+        <input
+          id="usuario"
+          type="text"
+          placeholder="Ingrese su usuario"
+          [(ngModel)]="correo"
+          name="correo"
+          required
+        />
+
+        <label for="password">Código</label>
+        <div class="password-wrapper">
+          <input
+            [type]="verPassword ? 'text' : 'password'"
+            id="password"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="Ingrese su contraseña"
+            required
+          />
+          <i
+            class="fas eye-icon"
+            [ngClass]="verPassword ? 'fa-eye-slash' : 'fa-eye'"
+            (click)="togglePassword()"
+          ></i>
+        </div>
+
+        <button type="submit" class="btn-primary">Acceder</button>
+
+        <div class="recuperar-contraseña">
+          <a (click)="mostrarSoporte()" style="cursor: pointer;">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <app-loading-overlay 
+          *ngIf="isLoading$ | async" 
+          [label]="(loaderLabel$ | async) ?? 'Validando...'">
+        </app-loading-overlay>
+
+      </form>
+
+      <div class="divider"><span>ó</span></div>
+
+      <button class="google-btn" (click)="loginWithGoogle()">
+        <img
+          src="https://www.svgrepo.com/show/475656/google-color.svg"
+          class="google-icon"
+          alt="Google"
+        />
+        Iniciar sesión con Google
+      </button>
+
+      <div *ngIf="mensaje" class="mensaje">{{ mensaje }}</div>
+
+      <div class="footer-institucional-local">
+        <span class="destacado">>></span>
+        <span>Sé íntegro</span> |
+        <span>Sé misionero</span> |
+        <span>Sé innovador</span>
+      </div>
+    </div>
+  </div>
+</div>

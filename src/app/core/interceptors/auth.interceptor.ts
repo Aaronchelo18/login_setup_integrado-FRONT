@@ -6,13 +6,14 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class AuthInterceptor implements HttpInterceptor {
   private router = inject(Router);
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // IMPORTANTE: Verifica que este nombre sea el mismo que usas al guardar el token en el login
-    const token = localStorage.getItem('access_token') || localStorage.getItem('lamb-access-token');
+    const token = localStorage.getItem('code5-access-token');
 
     const authReq = token
       ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
@@ -22,10 +23,10 @@ export class AuthInterceptor implements HttpInterceptor {
       catchError((err: unknown) => {
         if (err instanceof HttpErrorResponse) {
           if (err.status === 401 || err.status === 403) {
-            console.error('Sesión expirada o no autorizada');
-            // Si falla el token, limpiamos y mandamos al login del puerto 4200
-            localStorage.clear();
-            window.location.href = 'http://localhost:4200/login';
+            console.error('Sesión inválida en Setup, redirigiendo...');
+            localStorage.removeItem('code5-access-token');
+            localStorage.removeItem('code5-authorization-token');
+            this.router.navigate(['/login']);
           }
         }
         return throwError(() => err);

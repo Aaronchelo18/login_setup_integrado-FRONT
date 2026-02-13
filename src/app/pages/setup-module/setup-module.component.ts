@@ -46,19 +46,11 @@ export class SetupModuloComponent implements OnInit, AfterViewInit {
     this.initUserSubscription();
   }
 
-  /**
-   * Escucha los cambios del usuario y carga sus módulos
-   */
- private initUserSubscription(): void {
+  private initUserSubscription(): void {
     this.userService.user$.subscribe({
       next: (user) => {
         if (user) {
-          console.log('Usuario identificado:', user);
-          
-          // Eliminamos 'user.id' porque no existe en la interfaz UserData
-          // Priorizamos id_persona y usamos codigo como respaldo
           const targetId = user.id_persona || user.codigo;
-
           if (targetId) {
             this.loadModulos(targetId);
           } else {
@@ -70,22 +62,17 @@ export class SetupModuloComponent implements OnInit, AfterViewInit {
     });
   }
 
-  /**
-   * Llama al servicio para obtener los módulos desde el backend
-   */
   private loadModulos(idPersona: number | string): void {
     this.loadingModulos = true;
     this.errorMessage = null;
 
     this.moduloService.getModulos({ force: true, id_persona: Number(idPersona) }).subscribe({
       next: (data: Modulo[]) => {
-        // Filtrar solo módulos raíz activos
         const raizActivos = (data ?? []).filter(
           (m) => Number(m.id_parent ?? 0) === 0 && String(m.estado) === '1'
         );
 
         this.modulos = raizActivos.map((mod) => this.transformToModFront(mod));
-        
         this.loadingModulos = false;
         this.cdRef.detectChanges();
       },
@@ -96,9 +83,6 @@ export class SetupModuloComponent implements OnInit, AfterViewInit {
     });
   }
 
-  /**
-   * Transforma el modelo de datos básico al modelo con vista de iconos
-   */
   private transformToModFront(mod: Modulo): ModFront {
     const img = this.resolveImageUrl(mod.imagen);
     const displayNombre = (mod as any).modulo_nombre || mod.nombre;
@@ -124,9 +108,40 @@ export class SetupModuloComponent implements OnInit, AfterViewInit {
 
   salir(): void { this.userService.logout(); }
 
+  /**
+   * NAVEGACIÓN CORREGIDA: Redirige según la tabla de rutas propuesta
+   */
   goToAccess(modulo: Modulo): void {
+    const rawUrl = (modulo.url || '').toLowerCase();
+    const nombre = (modulo.nombre || '').toLowerCase();
+
+    // 1. Gestión de Aplicaciones / Dashboard (Items #1 y #14)
+    if (rawUrl.includes('gapp') || nombre.includes('aplicaciones')) {
+      this.router.navigate(['/app/application-management/dashboard']);
+      return;
+    }
+
+    // 2. Prácticas Preprofesionales (Item #2)
+    if (rawUrl.includes('ppp') || nombre.includes('prácticas')) {
+      this.router.navigate(['/app/internships/setup']);
+      return;
+    }
+
+    // 3. Vinculación con el Medio (Item #11)
+    if (rawUrl.includes('vcm') || nombre.includes('vinculación')) {
+      this.router.navigate(['/app/community-engagement/setup']);
+      return;
+    }
+
+    // 4. Gestión de Inventarios (Item #15)
+    if (rawUrl.includes('gestion') || nombre.includes('inventarios')) {
+      this.router.navigate(['/app/inventory-management']);
+      return;
+    }
+
+    // 5. Fallback para otros módulos (Usa el Shell con prefijo /app/)
     const slug = this.extractSlug(modulo.url || modulo.nombre);
-    this.router.navigate(['/', slug, 'home']);
+    this.router.navigate(['/app', slug]);
   }
 
   ngAfterViewInit(): void {
@@ -141,21 +156,18 @@ export class SetupModuloComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // --- HELPERS DE VALIDACIÓN ---
-
   isImg(v: ViewAny): v is ViewImg { return v?.kind === 'img'; }
   isMs(v: ViewAny): v is ViewMs { return v?.kind === 'ms'; }
   isFa(v: ViewAny): v is ViewFa { return v?.kind === 'fa'; }
   isEva(v: ViewAny): v is ViewEva { return v?.kind === 'eva'; }
   isIfy(v: ViewAny): v is ViewIfy { return v?.kind === 'ify'; }
 
-  // --- PARSEADORES ---
-
   private extractSlug(raw?: string | null): string {
-    const v = (raw ?? '').trim();
+    let v = (raw ?? '').trim().toLowerCase();
     if (!v) return '';
-    const clean = v.replace(/^\/+/, '').replace(/^setup\/+/i, '');
-    return clean.split('/')[0] || '';
+    // Limpia prefijos antiguos para generar el slug dinámico
+    v = v.replace(/^setup\//, '').replace(/^gapp\//, '').replace(/^\//, '');
+    return v.split('/')[0] || '';
   }
 
   private defaultImg(): string {
