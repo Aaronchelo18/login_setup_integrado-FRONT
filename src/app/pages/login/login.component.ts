@@ -1,23 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common'; 
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-import { environment } from '../../../environments/environment';
 import { LoaderService } from '../../loading/loader.service'; 
 import { LoadingOverlayComponent } from '../../loading/loading-overlay.component';
 import { Observable } from 'rxjs';
-
-interface LoginResponse {
-  success: boolean;
-  message?: string;
-  access_token: string;
-  authz_token: string;
-  expires_in: number;
-  token_type: string;
-}
 
 @Component({
   selector: 'app-login',
@@ -36,19 +25,16 @@ export class LoginComponent implements OnInit {
   loaderLabel$!: Observable<string>;
 
   private readonly loader = inject(LoaderService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private http: HttpClient,
-    private authService: AuthService
-  ) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.isLoading$ = this.loader.isLoading$;
     this.loaderLabel$ = this.loader.label$;
 
-    // Escuchamos los parámetros de la URL para flujo Google
     this.route.queryParams.subscribe(params => {
       const encodedAuth = params['auth'];
       if (encodedAuth) {
@@ -57,23 +43,18 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  /**
-   * Procesa el token y navega a la nueva ruta profesional
-   */
   private handleAuthAndRedirect(encodedAuth: string): void {
     this.loader.startNavigation('Cargando módulos...');
-    
-    // Guardamos tokens en LocalStorage
     this.authService.guardarTokens(encodedAuth);
 
-    // Navegación a la nueva ruta de Application Management
+    // REDIRECCIÓN CORRECTA AL SETUP
     this.router.navigate(['/app/application-management/setup']).then(nav => {
       if(nav) {
-        console.log('Navegación exitosa al Shell profesional');
         this.loader.endNavigation();
       } else {
-        console.error('Error: La ruta /app/application-management/setup no fue encontrada o el Guard la bloqueó.');
+        console.error('Error: La ruta /app/application-management/setup no existe o está bloqueada.');
         this.loader.endNavigation();
+        this.mensaje = 'Error al redirigir al setup.';
       }
     });
   }
@@ -87,11 +68,11 @@ export class LoginComponent implements OnInit {
     this.mensaje = '';
     this.loader.startNavigation('Validando credenciales...');
 
-    this.http.post<LoginResponse>(`${environment.apiUrl.code5}/api/config/auth/login-password`, {
+    this.authService.login({
       correo: this.correo,
       password: this.password
     }).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res.success) {
           const payload = {
             access_token: res.access_token,
@@ -99,7 +80,6 @@ export class LoginComponent implements OnInit {
             expires_in:   res.expires_in,
             token_type:   res.token_type
           };
-
           const encoded = btoa(JSON.stringify(payload));
           this.handleAuthAndRedirect(encoded);
         } else {
@@ -107,18 +87,16 @@ export class LoginComponent implements OnInit {
           this.mensaje = res.message || 'Credenciales incorrectas.';
         }
       },
-      error: (err) => {
+      error: (err: any) => { // Tipado (err: any) para evitar error TS
         this.loader.endNavigation();
-        this.mensaje = err.error?.message || 'Error en el servidor. Intente más tarde.';
-        Swal.fire('Error', this.mensaje, 'error');
+        this.mensaje = err.error?.message || 'Error en el servidor.';
+        Swal.fire('Error de Acceso', this.mensaje, 'error');
       }
     });
   }
 
-  togglePassword(): void { 
-    this.verPassword = !this.verPassword; 
-  }
-
+  togglePassword(): void { this.verPassword = !this.verPassword; }
+  
   mostrarSoporte(): void { 
     Swal.fire({ 
       title: 'Soporte Técnico', 
@@ -128,7 +106,5 @@ export class LoginComponent implements OnInit {
     }); 
   }
 
-  loginWithGoogle(): void { 
-    this.authService.loginWithGoogle(); 
-  }
+  loginWithGoogle(): void { this.authService.loginWithGoogle(); }
 }

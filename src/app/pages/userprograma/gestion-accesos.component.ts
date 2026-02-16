@@ -1,6 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
+// Importación de SweetAlert2
+import Swal from 'sweetalert2';
+
 import { Campus, CreateUpdateAccesoDto, Facultad, FacultadComplete, ProgramaEstudio, ProgramaEstudioComplete, UsuarioPersona, UsuarioProgramaAcceso } from '../../models/user/user-access.models';
 import { UserAccessService } from '../../core/services/management/user-access.service';
 import { ToastService } from '../../shared/interfaces/toast/toast.service';
@@ -9,36 +13,27 @@ import { ToastService } from '../../shared/interfaces/toast/toast.service';
   selector: 'app-gestion-accesos',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './gestion-accesos.component.html',
   styleUrls: ['./gestion-accesos.component.css'],
 })
 export class GestionAccesosComponent implements OnInit {
-  // buscar usuario
   searchTerm = '';
   loadingSearch = false;
   searchResults: UsuarioPersona[] = [];
   minChars = 4;
-
   usuarioSeleccionado: UsuarioPersona | null = null;
-
-  // accesos actuales
   accesos: UsuarioProgramaAcceso[] = [];
   loadingAccesos = false;
-
-  // modal asignar acceso
   showAssignModal = false;
   accesoForm!: FormGroup;
   savingAccess = false;
-
   campusList: Campus[] = [];
   facultadesList: Facultad[] = [];
   programasList: ProgramaEstudio[] = [];
 
-  // Cache completo de datos
   private allFacultades: FacultadComplete[] = [];
   private allProgramas: ProgramaEstudioComplete[] = [];
-
-  // Loading states para los selects
   loadingFacultades = false;
   loadingProgramas = false;
 
@@ -61,8 +56,6 @@ export class GestionAccesosComponent implements OnInit {
     });
   }
 
-  // ───── BÚSQUEDA DE USUARIO ─────
-
   onSearchChange(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchTerm = value.trim();
@@ -71,21 +64,17 @@ export class GestionAccesosComponent implements OnInit {
   buscarUsuario(): void {
     this.usuarioSeleccionado = null;
     this.accesos = [];
-
     if (this.searchTerm.length < this.minChars) {
       this.searchResults = [];
       this.toastr.warning(`Ingresa al menos ${this.minChars} caracteres`);
       return;
     }
-
     this.loadingSearch = true;
     this.userAccessService.searchUsers(this.searchTerm).subscribe({
       next: (resp) => {
         this.searchResults = resp.success ? resp.data : [];
         this.loadingSearch = false;
-        if (this.searchResults.length === 0) {
-          this.toastr.info('No se encontraron resultados');
-        }
+        if (this.searchResults.length === 0) this.toastr.info('No se encontraron resultados');
       },
       error: () => {
         this.loadingSearch = false;
@@ -97,7 +86,7 @@ export class GestionAccesosComponent implements OnInit {
 
   seleccionarUsuario(usuario: UsuarioPersona): void {
     this.usuarioSeleccionado = usuario;
-    this.searchResults = []; // ocultar lista
+    this.searchResults = [];
     this.loadAccesos(usuario.id_persona);
   }
 
@@ -105,8 +94,6 @@ export class GestionAccesosComponent implements OnInit {
     this.usuarioSeleccionado = null;
     this.accesos = [];
   }
-
-  // ───── ACCESOS ACTUALES ─────
 
   private loadAccesos(idPersona: number): void {
     this.loadingAccesos = true;
@@ -122,29 +109,56 @@ export class GestionAccesosComponent implements OnInit {
     });
   }
 
+  /**
+   * ELIMINAR ACCESO CON SWEET ALERT 2
+   */
   eliminarAcceso(acceso: UsuarioProgramaAcceso): void {
     if (!this.usuarioSeleccionado) return;
 
-    const mensaje = `¿Eliminar acceso de ${acceso.campus} - ${acceso.facultad} - ${acceso.programa_estudio}?`;
-    
-    if (!confirm(mensaje)) return;
+    Swal.fire({
+      title: '¿Eliminar acceso?',
+      text: `Estás por quitar el acceso a: ${acceso.campus} - ${acceso.facultad}`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.ejecutarEliminacion(acceso);
+      }
+    });
+  }
+
+  private ejecutarEliminacion(acceso: UsuarioProgramaAcceso): void {
+    if (!this.usuarioSeleccionado) return;
 
     this.userAccessService.deleteAccess(this.usuarioSeleccionado.id_persona, acceso.id).subscribe({
       next: (resp) => {
         if (resp.success) {
           this.accesos = this.accesos.filter((a) => a.id !== acceso.id);
           this.toastr.success('Acceso eliminado correctamente');
+          
+          Swal.fire({
+            title: '¡Eliminado!',
+            text: 'El acceso ha sido removido con éxito.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
         }
       },
-      error: () => this.toastr.error('No se pudo eliminar el acceso')
+      error: () => {
+        this.toastr.error('No se pudo eliminar el acceso');
+        Swal.fire('Error', 'Hubo un problema al procesar la solicitud', 'error');
+      }
     });
   }
 
-  // ───── MODAL DE ASIGNAR ACCESO ─────
-
   abrirModalAsignar(): void {
     if (!this.usuarioSeleccionado) return;
-
     this.accesoForm.reset();
     this.facultadesList = [];
     this.programasList = [];
@@ -155,43 +169,29 @@ export class GestionAccesosComponent implements OnInit {
     this.showAssignModal = false;
   }
 
-  // Cargar datos iniciales
   private loadAllData(): void {
-    // Solo cargar campus al inicio
     this.userAccessService.getCampus().subscribe({
-      next: (resp) => {
-        this.campusList = resp.data ?? [];
-      },
+      next: (resp) => this.campusList = resp.data ?? [],
       error: (err) => console.error('Error loading campus:', err)
     });
   }
 
   onChangeCampus(event: Event): void {
     const value = Number((event.target as HTMLSelectElement).value);
-    
-    this.accesoForm.patchValue({
-      id_campus: value || null,
-      id_facultad: null,
-      id_programa_estudio: null,
-    });
-    
+    this.accesoForm.patchValue({ id_campus: value || null, id_facultad: null, id_programa_estudio: null });
     this.programasList = [];
     this.facultadesList = [];
-
     if (!value) return;
 
-    // Verificar si ya tenemos las facultades en cache
     const cachedFacultades = this.allFacultades.filter(f => f.id_campus === value);
     if (cachedFacultades.length > 0) {
       this.facultadesList = cachedFacultades;
       return;
     }
 
-    // Si no está en cache, cargar del servidor
     this.userAccessService.getFacultades(value).subscribe({
       next: (resp) => {
         const facultades = resp.data ?? [];
-        // Guardar en cache con el id_campus
         this.allFacultades.push(...facultades.map(f => ({ ...f, id_campus: value })));
         this.facultadesList = facultades;
       },
@@ -201,24 +201,16 @@ export class GestionAccesosComponent implements OnInit {
 
   onChangeFacultad(event: Event): void {
     const value = Number((event.target as HTMLSelectElement).value);
-    
-    this.accesoForm.patchValue({
-      id_facultad: value || null,
-      id_programa_estudio: null,
-    });
-
+    this.accesoForm.patchValue({ id_facultad: value || null, id_programa_estudio: null });
     this.programasList = [];
-
     if (!value) return;
 
-    // Verificar si ya tenemos los programas en cache
     const cachedProgramas = this.allProgramas.filter(p => p.id_facultad === value);
     if (cachedProgramas.length > 0) {
       this.programasList = cachedProgramas;
       return;
     }
 
-    // Si no está en cache, cargar del servidor
     this.loadingProgramas = true;
     this.userAccessService.getProgramas(value).subscribe({
       next: (resp) => {
@@ -237,15 +229,12 @@ export class GestionAccesosComponent implements OnInit {
 
   guardarAcceso(): void {
     if (!this.usuarioSeleccionado) return;
-
     if (this.accesoForm.invalid) {
       this.accesoForm.markAllAsTouched();
       return;
     }
 
     const dto = this.accesoForm.value as CreateUpdateAccesoDto;
-
-    // Validar duplicidad en el frontend
     const existeDuplicado = this.accesos.some(acc => 
       acc.id_campus === dto.id_campus && 
       acc.id_facultad === dto.id_facultad && 
@@ -258,23 +247,19 @@ export class GestionAccesosComponent implements OnInit {
     }
 
     this.savingAccess = true;
-
-    this.userAccessService
-      .createAccess(this.usuarioSeleccionado.id_persona, dto)
-      .subscribe({
-        next: (resp) => {
-          if (resp.success && resp.data) {
-            this.accesos.push(resp.data);
-            this.cerrarModal();
-            this.toastr.success('El acceso se asignó correctamente');
-          }
-          this.savingAccess = false;
-        },
-        error: (err) => {
-          this.savingAccess = false;
-          const mensaje = err.error?.message || 'No se pudo crear el acceso';
-          this.toastr.error(mensaje);
-        },
-      });
+    this.userAccessService.createAccess(this.usuarioSeleccionado.id_persona, dto).subscribe({
+      next: (resp) => {
+        if (resp.success && resp.data) {
+          this.accesos.push(resp.data);
+          this.cerrarModal();
+          this.toastr.success('El acceso se asignó correctamente');
+        }
+        this.savingAccess = false;
+      },
+      error: (err) => {
+        this.savingAccess = false;
+        this.toastr.error(err.error?.message || 'No se pudo crear el acceso');
+      },
+    });
   }
 }

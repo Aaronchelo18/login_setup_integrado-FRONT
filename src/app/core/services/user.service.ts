@@ -6,12 +6,12 @@ import { environment } from '../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
 
 export interface UserData {
-  id_persona: number | string; // <--- Nuevo campo agregado
+  id_persona: number | string;
   codigo: string;
   nombres: string;
   apellidos: string;
-  id_rol: number[]; // <--- Nuevo campo agregado
-  roles_ids: number[]; // <--- Nuevo campo agregado para múltiples roles
+  id_rol: number[];
+  roles_ids: number[];
   person?: any;
   correo?: string;
   foto?: string;
@@ -23,17 +23,19 @@ export class UserService {
   private userSubject = new BehaviorSubject<UserData | null>(null);
   user$ = this.userSubject.asObservable();
 
+  // URL corregida sin el /config
+  private readonly AUTH_ME_URL = `${environment.apiUrl.code5}/api/auth/me`;
+
   constructor() {
     this.loadUserFromToken();
   }
 
   /**
-   * Extrae la información del usuario e id_rol directamente del JWT.
+   * Carga inicial desde el token guardado en localStorage
    */
-  // src/app/core/services/user.service.ts
-
   private loadUserFromToken(): void {
-    const token = localStorage.getItem('code5-access-token');
+    // CORRECCIÓN: Usar 'access_token'
+    const token = localStorage.getItem('access_token');
     if (!token) return;
 
     try {
@@ -43,36 +45,35 @@ export class UserService {
       const userData: UserData = {
         id_persona: Number(payload.sub),
         codigo: payload.codigo || '',
-        // CAMBIO: Asignamos el arreglo completo directamente
         id_rol: payload.id_rol || rolesArray,
         roles_ids: rolesArray,
         nombres: payload.person?.nombre || '',
-        apellidos:
-          `${payload.person?.paterno || ''} ${payload.person?.materno || ''}`.trim(),
+        apellidos: `${payload.person?.paterno || ''} ${payload.person?.materno || ''}`.trim(),
         person: payload.person,
         correo: payload.correo,
       };
 
       this.userSubject.next(userData);
-      console.log('Usuario cargado con IDs de Roles:', userData.id_rol);
+      console.log('User cargado desde token:', userData);
     } catch (error) {
       console.error('Error decodificando el token:', error);
     }
   }
 
+  /**
+   * Llama al endpoint /me del backend para refrescar datos
+   */
   fetchUserProfile(): Observable<UserData | null> {
     return this.http
       .get<{
         success: boolean;
         user: UserData;
-      }>(`${environment.apiUrl.global}/api/config/auth/me`)
+      }>(this.AUTH_ME_URL)
       .pipe(
         map((res) => res.user),
         tap((user) => this.userSubject.next(user)),
         catchError((err) => {
-          console.warn(
-            'Backend /me falló (500), se mantienen datos del token local.',
-          );
+          console.warn('Backend /me no respondió adecuadamente, usando datos locales.');
           return of(this.userSubject.value);
         }),
       );
@@ -81,6 +82,6 @@ export class UserService {
   logout() {
     localStorage.clear();
     this.userSubject.next(null);
-    window.location.href = 'http://localhost:4200/login';
+    window.location.href = '/login';
   }
 }

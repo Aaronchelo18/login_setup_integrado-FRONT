@@ -1,4 +1,4 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
@@ -39,12 +39,11 @@ export class ModuleComponent implements OnInit {
   creating = false;
   editing = false;
 
-  constructor(
-    private api: ModuloService,
-    private route: ActivatedRoute,
-    private loader: LoaderService,
-    private router: Router
-  ) {}
+  // Uso de inject para consistencia
+  private api = inject(ModuloService);
+  private route = inject(ActivatedRoute);
+  private loader = inject(LoaderService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
@@ -64,6 +63,13 @@ export class ModuleComponent implements OnInit {
       },
       error: () => this.error = 'Error de conexión con el servidor.'
     });
+  }
+
+  /**
+   * CORRECCIÓN SOLICITADA: Redirige al dashboard de gestión de aplicaciones
+   */
+  goBack(): void {
+    this.router.navigate(['/app/application-management/dashboard']);
   }
 
   onCreateSubmit(p: any) {
@@ -139,11 +145,6 @@ export class ModuleComponent implements OnInit {
   firstLetter = (n?: string | null) => (n || 'M').trim().charAt(0).toUpperCase();
   trackById = (_: number, m: Modulo) => m.id_modulo;
 
-  goBack(): void {
-    if (this.parentId) this.router.navigate(['/setup/modulos']); 
-    else this.router.navigate(['/setup']);
-  }
-
   fetchParents() {
     if (this.loadingParents) return;
     this.loadingParents = true;
@@ -163,7 +164,6 @@ export class ModuleComponent implements OnInit {
   openPrivileges(m: Modulo) { this.selectedMod = m; this.showPriv = true; this.toggleBodyScroll(true); }
   closePriv() { this.showPriv = false; this.toggleBodyScroll(false); }
   
-  // ESTE ES EL MÉTODO QUE PEDISTE (Jerarquía)
   openHierarchy(m: Modulo) { 
     this.selectedMod = m; 
     this.openHier = true; 

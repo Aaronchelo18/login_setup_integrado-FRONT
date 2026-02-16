@@ -25,7 +25,7 @@ type ModNode = {
 export class SidebarComponent implements OnInit, OnDestroy {
   @Input() collapsed = false;
   padres: ModNode[] = [];
-  private open: Record<number, boolean> = {};
+  open: Record<number, boolean> = {}; 
   private destroy$ = new Subject<void>();
 
   constructor(private router: Router, private moduloSrv: ModuloService) {}
@@ -45,6 +45,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private loadPadres(): void {
+    // getPadres() ahora usa el caché que implementamos en el servicio
     this.moduloSrv.getPadres().subscribe({
       next: (data: ModNode[]) => {
         this.padres = (data ?? []).filter((m) => String(m.estado) === '1');
@@ -65,39 +66,39 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isOpen(id: number): boolean { return !!this.open[id]; }
 
   private clean(u?: string | null): string {
-    const v = (u || '').trim();
-    return v ? v.replace(/^\/+/, '').replace(/^setup\/+/i, '') : '';
-  }
-
-  private getSlug(u?: string | null): string { return this.clean(u).split('/')[0] || ''; }
-
-  private getPage(u?: string | null): string {
-    const parts = this.clean(u).split('/').filter(Boolean);
-    return parts[parts.length - 1] || '';
+    if (!u) return '';
+    return u.trim().replace(/^\/+/, '').replace(/\/+$/, '');
   }
 
   normalizeUrl(url?: string | null): string | null {
-    const slug = this.getSlug(url);
-    return slug ? ('/' + slug + '/home') : null;
+    const raw = this.clean(url).toLowerCase();
+    if (!raw) return null;
+
+    if (raw.includes('dashboard')) return '/app/application-management/dashboard';
+    if (raw.includes('iam/roles')) return '/app/iam/roles';
+    if (raw.includes('iam/user-access')) return '/app/iam/user-access';
+    if (raw.includes('iam/role-assignment')) return '/app/iam/role-assignment';
+    if (raw.includes('application-management/modules')) return '/app/application-management/modules';
+    
+    // Eliminada la redirección de access-control
+    
+    if (raw.startsWith('app/')) return '/' + raw;
+    return '/app/' + raw;
   }
 
   linkForChild(parent: ModNode, child: ModNode): string | null {
-    const rawUrl = (child?.url || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
-    if (rawUrl) return '/' + rawUrl;
-    const parentSlug = this.getSlug(parent?.url);
-    const childPage = this.getPage(child?.url);
-    return (parentSlug && childPage) ? `/${parentSlug}/${childPage}` : null;
+    return this.normalizeUrl(child?.url);
   }
 
   private expandForCurrentUrl(): void {
     const cur = this.router.url;
     for (const p of this.padres) {
-      const pSlug = this.getSlug(p.url);
+      const pUrl = this.normalizeUrl(p.url) || '';
       const childMatch = (p.children ?? []).some((c) => {
-        const rawUrl = (c.url || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
-        return rawUrl ? (cur === '/' + rawUrl || cur.startsWith('/' + rawUrl + '/')) : false;
+        const cUrl = this.linkForChild(p, c) || '';
+        return cUrl ? cur.startsWith(cUrl) : false;
       });
-      if (childMatch || (pSlug && cur.startsWith('/' + pSlug + '/'))) {
+      if (childMatch || (pUrl && cur.startsWith(pUrl))) {
         this.open[p.id_modulo] = true;
       }
     }
@@ -106,17 +107,49 @@ export class SidebarComponent implements OnInit, OnDestroy {
   iconType(icon?: string | null): 'iconify' | 'img' | 'none' {
     if (!icon) return 'none';
     const v = icon.trim().toLowerCase();
-    if (v.endsWith('.png') || v.endsWith('.jpg') || v.endsWith('.svg')) return 'img';
+    if (v.endsWith('.png') || v.endsWith('.jpg') || v.endsWith('.svg') || v.endsWith('.webp')) return 'img';
     return v.includes(':') ? 'iconify' : 'none';
   }
 
   iconUrl(icon?: string | null): string {
-    return icon ? (/^https?:\/\//i.test(icon) ? icon : `assets/img/${icon}`) : '';
+    if (!icon) return '';
+    if (/^https?:\/\//i.test(icon)) return icon;
+    return `assets/img/${icon}`;
+  }
+
+  private normalizeString(n: string): string {
+    return n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
   isModulosName(name?: string): boolean {
-    return !!name && name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() === 'modulos';
+    const n = this.normalizeString(name || '');
+    return n === 'modulos' || n.includes('gestion de modulos');
   }
 
-  onChildClick(_h: any, _ev: MouseEvent) {}
+  isRolesName(name?: string): boolean {
+    const n = this.normalizeString(name || '');
+    return n === 'roles' || n === 'gestion de roles';
+  }
+
+  isAssignmentName(name?: string): boolean {
+    const n = this.normalizeString(name || '');
+    return n.includes('asignacion de roles');
+  }
+
+  isUserAccessName(name?: string): boolean {
+    const n = this.normalizeString(name || '');
+    return n.includes('accesos a usuarios');
+  }
+
+  // Desactivado para que no devuelva true y no genere el link en el HTML
+  isAccessControlName(name?: string): boolean {
+    return false; 
+  }
+
+  isDashboardName(name?: string): boolean {
+    const n = this.normalizeString(name || '');
+    return n === 'dashboard' || n === 'inicio';
+  }
+
+  onChildClick(h: any, ev: MouseEvent): void {}
 }

@@ -1,9 +1,11 @@
-import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, AfterViewInit, inject, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { Modulo } from '../../models/modulo.model';
 import { ModuloService } from '../../core/services/modulo.service';
 import { UserService } from '../../core/services/user.service';
 import { Observable } from 'rxjs';
+import { CommonModule } from '@angular/common';
+
 
 // --- TIPOS DE VISTA PARA ICONOS ---
 type ViewImg = { kind: 'img'; src: string };
@@ -16,8 +18,11 @@ type ModFront = Modulo & { _view: ViewAny };
 
 @Component({
   selector: 'app-setup-modulo',
+  standalone: true,
   templateUrl: './setup-module.component.html',
   styleUrls: ['./setup-module.component.scss'],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  imports: [CommonModule, RouterModule],
 })
 export class SetupModuloComponent implements OnInit, AfterViewInit {
   // --- PROPIEDADES PÚBLICAS ---

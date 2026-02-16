@@ -11,32 +11,29 @@ import { UsersListPage } from './pages/management/users/users-list.page';
 import { GestionAccesosComponent } from './pages/userprograma/gestion-accesos.component';
 import { AccessReportsPage } from './pages/reports/access-reports.page';
 import { DynamicPortalComponent } from './pages/portal/dynamic-portal.component';
+import { ModuleComponent } from './pages/module/module.component'; // Verifica que la ruta de importación sea correcta
 
 export const routes: Routes = [
-  // 1. RUTA PÚBLICA
   { path: 'login', component: LoginComponent },
 
-  // 2. PORTAL DE SELECCIÓN (Sin Sidebar - Pantalla Completa)
   { 
     path: 'app/application-management/setup', 
     canActivate: [authGuard],
     loadChildren: () => import('./pages/setup-module/setup-module.module').then(m => m.SetupModuloModule) 
   },
 
-  // 3. SHELL PRINCIPAL (Con Sidebar y Header)
   {
     path: 'app',
     component: MainLayoutComponent,
     canActivate: [authGuard],
     children: [
-      // Redirección por defecto al Dashboard
       { path: '', redirectTo: 'application-management/dashboard', pathMatch: 'full' },
       
-      // ÁREA: Gestión de Aplicaciones
       {
         path: 'application-management',
         children: [
           { path: 'dashboard', component: HomeComponent }, 
+          { path: 'modules', component: ModuleComponent }, // <--- NUEVA RUTA AGREGADA
           { path: 'access-control', component: RolesAccessListComponent },
           { path: 'reports', component: AccessReportsPage },
           { path: 'access/role/:idRol/apps', component: RoleAppsPage },
@@ -44,7 +41,6 @@ export const routes: Routes = [
         ]
       },
 
-      // ÁREA: IAM (Identity and Access Management)
       {
         path: 'iam',
         children: [
@@ -54,13 +50,11 @@ export const routes: Routes = [
         ]
       },
 
-      // MÓDULOS DINÁMICOS
       { path: ':module', pathMatch: 'full', redirectTo: ':module/home' },
       { path: ':module/:page', component: DynamicPortalComponent },
     ],
   },
 
-  // REDIRECCIONES GLOBALES
   { path: '', redirectTo: 'app/application-management/setup', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' },
 ];
