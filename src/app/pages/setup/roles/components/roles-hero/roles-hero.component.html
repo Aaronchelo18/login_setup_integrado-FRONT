@@ -1,33 +1,47 @@
-<header class="hero-panel">
-  <div class="hero-top">
-    <nav class="crumbs">
-      <a routerLink="/home">Home</a><span>/</span><span>config</span><span>/</span>
-      <span class="current">role</span>
-    </nav>
-    <h1>Roles</h1>
-    <p class="subtitle">Gestión de perfiles y permisos básicos del sistema</p>
+<header class="mod-header">
+  <div class="header-titles">
+    <nav class="breadcrumb">Sistema de Accesos / Configuración</nav>
+
+    <div class="title-container">
+      <button class="btn-back" type="button" (click)="goBack()" title="Volver">
+        <iconify-icon icon="lucide:arrow-left"></iconify-icon>
+      </button>
+      <h1>Gestión de Roles</h1>
+    </div>
+
+    <p>Administre los perfiles, estados y permisos básicos del sistema.</p>
+
+    <div class="hero-filters">
+      <div class="filter-field">
+        <label for="estadoTop">Filtrar por Estado:</label>
+        <div class="select-wrapper">
+          <select
+            id="estadoTop"
+            [(ngModel)]="estado"
+            (change)="estadoChange.emit(estado)"
+          >
+            <option value="todos">Todos los registros</option>
+            <option value="activo">Solo Activos</option>
+            <option value="inactivo">Solo Inactivos</option>
+          </select>
+          <iconify-icon
+            icon="lucide:chevron-down"
+            class="select-icon"
+          ></iconify-icon>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Fila de controles -->
-  <div class="hero-controls">
-    <!-- Izquierda: Estado -->
-    <div class="field inline">
-      <label for="estadoTop">Estado</label>
-      <select id="estadoTop" [(ngModel)]="estado" (change)="estadoChange.emit(estado)">
-        <option value="todos">Todos</option>
-        <option value="activo">Activo</option>
-        <option value="inactivo">Inactivo</option>
-      </select>
-    </div>
+  <div class="header-actions">
+    <button class="btn-visualize" type="button" (click)="visualizar.emit()">
+      <iconify-icon icon="lucide:eye" class="btn-icon"></iconify-icon>
+      <span>Visualizar</span>
+    </button>
 
-    <!-- Derecha: Botones -->
-    <div class="actions">
-      <button type="button" class="btn secondary wide" (click)="visualizar.emit()">
-        Visualizar
-      </button>
-      <button type="button" class="btn primary wide" (click)="nuevo.emit()">
-        Nuevo
-      </button>
-    </div>
+    <button class="btn-create" type="button" (click)="nuevo.emit()">
+      <iconify-icon icon="lucide:plus" class="btn-icon"></iconify-icon>
+      <span>Nuevo Rol</span>
+    </button>
   </div>
 </header>

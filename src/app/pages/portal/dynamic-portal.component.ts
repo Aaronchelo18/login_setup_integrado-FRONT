@@ -5,8 +5,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 // Páginas reales
 import { HomeComponent } from '../home/home.component';
-import { RoleAccessComponent } from '../role-access/role-access.component';
-import { RoleComponent } from '../role/role.component';
 import { ModuleComponent } from '../module/module.component'; // <-- Módulos
 
 type Ctor = any;
@@ -15,10 +13,6 @@ type Ctor = any;
 const PAGE_MAP: Record<string, Ctor> = {
   home: HomeComponent,
   dashboard: HomeComponent,          // alias /setup/dashboard
-  'rol-acceso': RoleAccessComponent, // mapeo rol ↔ accesos
-  roles: RoleComponent,
-
-  // Módulos (tu grid/CRUD)
   modulo: ModuleComponent,           // nuevo
   modulos: ModuleComponent,          // alias opcional
 };
