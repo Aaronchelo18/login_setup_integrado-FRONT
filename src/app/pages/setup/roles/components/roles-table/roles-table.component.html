@@ -1,5 +1,5 @@
 <section class="table-panel">
-  <header class="table-head"><h2>Listado</h2></header>
+  <header class="table-head"><h2>Listado de Roles</h2></header>
 
   <div class="card">
     <div class="thead">
@@ -18,7 +18,7 @@
     <div *ngIf="!loading && !roles.length" class="empty">Sin datos para mostrar</div>
 
     <div class="tbody" *ngIf="!loading && roles.length">
-      <div class="row" *ngFor="let r of roles; trackBy: trackById; let i = index" [class.zebra]="i % 2 === 1">
+      <div class="row" *ngFor="let r of roles; trackBy: trackById; let i = index">
         <div class="td col-id">{{ r.id_rol }}</div>
         <div class="td"><span class="name">{{ r.nombre }}</span></div>
         <div class="td col-est center">
@@ -28,13 +28,15 @@
         </div>
         <div class="td col-ops right ops">
           <button type="button" class="icon-btn" title="Editar" (click)="edit.emit(r)">
-            <ion-icon name="pencil-outline"></ion-icon>
+            <iconify-icon icon="lucide:edit-3"></iconify-icon>
           </button>
+          
           <button type="button" class="toggle-btn" [class.is-on]="r.estado==='1'" title="Cambiar estado" (click)="toggle.emit(r)">
             <span class="knob"></span>
           </button>
+
           <button type="button" class="icon-btn danger" title="Eliminar" (click)="remove.emit(r)">
-            <ion-icon name="trash-outline"></ion-icon>
+            <iconify-icon icon="lucide:trash-2"></iconify-icon>
           </button>
         </div>
       </div>
@@ -43,11 +45,11 @@
     <footer class="tfoot">
       <div class="pager">
         <button type="button" class="btn ghost sm" disabled aria-label="Anterior">
-          <ion-icon name="chevron-back-outline"></ion-icon>
+          <iconify-icon icon="lucide:chevron-left"></iconify-icon>
         </button>
         <span>1</span>
         <button type="button" class="btn ghost sm" disabled aria-label="Siguiente">
-          <ion-icon name="chevron-forward-outline"></ion-icon>
+          <iconify-icon icon="lucide:chevron-right"></iconify-icon>
         </button>
       </div>
     </footer>

@@ -5,52 +5,59 @@ import { environment } from '../../../../environments/environment';
 import { UsersResponse } from '../../../models/user/users.model';
 
 type ApiAssigned = { success: boolean; data: { id_rol: number }[] };
-type ApiSave    = { success: boolean; message?: string; count?: number };
-type ApiList<T> = { success: boolean; data: T[] };
+type ApiSave     = { success: boolean; message?: string };
+type ApiList<T>  = { success: boolean; data: T[] };
 
 @Injectable({ providedIn: 'root' })
 export class UserManagementService {
 
+  // Base para IAM: .../api/iam/role-assignment
+  private iamBase = `${environment.apiUrl.code5}/api/iam/role-assignment`;
+  private rolesCatalog = `${environment.apiUrl.code5}/api/iam/roles`;
 
-  private usersBase = `${environment.apiUrl.code5}/api/management/users`;
-  private rolesCatalog = `${environment.apiUrl.code5}/api/v1/config/roles`;
-  private roleuser = `${environment.apiUrl.code5}/api/management`;
+  constructor(private http: HttpClient) {}
 
-
- constructor(private http: HttpClient) {}
-
-list(page = 1, perPage?: number): Observable<UsersResponse> {
-    let params = new HttpParams().set('page', String(page));
-    if (perPage) params = params.set('per_page', String(perPage));
-    return this.http.get<UsersResponse>(this.usersBase, { params });
+  /**
+   * Lista general de usuarios (Paginada)
+   */
+  list(page = 1, perPage = 10): Observable<UsersResponse> {
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('per_page', String(perPage));
+    return this.http.get<UsersResponse>(`${this.iamBase}/users`, { params });
   }
 
-   search(q: string, page = 1, perPage?: number): Observable<UsersResponse> {
-    let params = new HttpParams()
-      .set('q', q)
-      .set('page', String(page));
-
-    if (perPage) params = params.set('per_page', String(perPage));
-
-    // ✅ FIX #2: sin /search, tu backend es /users?q=
-    return this.http.get<UsersResponse>(this.usersBase, { params });
+  /**
+   * Búsqueda específica de usuarios por término (ID, nombre, correo)
+   */
+  search(term: string, page = 1, perPage = 10): Observable<UsersResponse> {
+    const params = new HttpParams()
+      .set('q', term)
+      .set('page', String(page))
+      .set('per_page', String(perPage));
+    
+    // Apunta a .../api/iam/role-assignment/search
+    return this.http.get<UsersResponse>(`${this.iamBase}/search`, { params });
   }
 
-
- listRoles(): Observable<ApiList<{ id_rol: number; nombre: string }>> {
+  /**
+   * Catálogo de todos los roles disponibles
+   */
+  listRoles(): Observable<ApiList<{ id_rol: number; nombre: string }>> {
     return this.http.get<ApiList<{ id_rol: number; nombre: string }>>(this.rolesCatalog);
   }
 
+  /**
+   * Roles actualmente asignados a una persona específica
+   */
   assignedToUser(id_persona: number): Observable<ApiAssigned> {
-    const url = `${this.usersBase}/${id_persona}/roles`;
-    return this.http.get<ApiAssigned>(url);
+    return this.http.get<ApiAssigned>(`${this.iamBase}/${id_persona}/roles`);
   }
 
-  saveForUser(
-    id_persona: number,
-    roleIds: number[]
-  ): Observable<ApiSave> {
-    const url = `${this.roleuser}/roles/useusersrs/${id_persona}/roles`;
-    return this.http.post<ApiSave>(url, { roles: roleIds });
+  /**
+   * Guarda/Sincroniza la lista de roles de un usuario
+   */
+  saveForUser(id_persona: number, roleIds: number[]): Observable<ApiSave> {
+    return this.http.post<ApiSave>(`${this.iamBase}/${id_persona}/roles`, { roles: roleIds });
   }
 }

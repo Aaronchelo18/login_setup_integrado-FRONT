@@ -1,93 +1,45 @@
 <div class="modal-backdrop" (click)="close()"></div>
 
-<div class="modal" role="dialog" aria-modal="true">
-  <!-- CABECERA -->
+<div class="modal">
   <header class="modal-head">
-    <div class="title">
-      <div class="avatar">🔐</div>
-      <div class="info">
-        <span class="label">ASIGNAR ROLES A</span>
-        <div class="user">
-          {{ displayName(user) }}
-          <small *ngIf="user?.correo">({{ user.correo }})</small>
-        </div>
+    <div class="user-profile">
+      <div class="avatar-circle">
+        {{ user.nombre[0] }}{{ user.paterno[0] }}
+      </div>
+      <div class="user-info">
+        <span class="role-label">GESTIÓN DE ACCESOS</span>
+        <h2 class="user-name">{{ fullName() }}</h2>
+        <span class="user-email" *ngIf="user.correo">{{ user.correo }}</span>
       </div>
     </div>
-
-    <button type="button" class="close" (click)="close()">×</button>
+    <button class="btn-close" (click)="close()" [disabled]="saving">
+      <iconify-icon icon="lucide:x"></iconify-icon>
+    </button>
   </header>
 
-  <!-- CUERPO -->
   <section class="modal-body">
-    <!-- Mensajes de estado -->
-    <div *ngIf="successMsg" class="alert ok">
-      <div class="ico-check">✔</div>
-      <div class="txt">
-        <span>{{ successMsg }}</span>
-        <small>Los cambios ya fueron guardados.</small>
+    <p class="section-title">Selecciona los roles que tendrá el usuario:</p>
+    
+    <div class="roles-grid">
+      <div 
+        *ngFor="let r of roles" 
+        class="role-item" 
+        [class.active]="selected.has(r.id_rol)"
+        [class.disabled]="saving"
+        (click)="toggle(r.id_rol)">
+        
+        <div class="check-box">
+          <iconify-icon [icon]="selected.has(r.id_rol) ? 'lucide:check-circle-2' : 'lucide:circle'"></iconify-icon>
+        </div>
+        <span class="role-text">{{ r.nombre }}</span>
       </div>
-    </div>
-
-    <div *ngIf="errorMsg" class="alert err">
-      <div class="ico-check">!</div>
-      <div class="txt">
-        <span>{{ errorMsg }}</span>
-        <small>Intenta nuevamente en unos segundos.</small>
-      </div>
-    </div>
-
-    <div class="tools">
-      <input
-        type="text"
-        name="searchRole"
-        placeholder="Buscar rol…"
-        [(ngModel)]="q" />
-    </div>
-
-    <!-- Loading con animación -->
-    <div *ngIf="loading" class="loading loading-inline">
-      <span class="spinner"></span>
-      <span>Cargando roles…</span>
-    </div>
-
-    <div *ngIf="!loading && filtered.length === 0" class="empty">
-      No hay roles para mostrar
-    </div>
-
-    <div *ngIf="!loading && filtered.length > 0" class="roles-grid">
-      <label class="role-item" *ngFor="let r of filtered">
-        <input
-          type="checkbox"
-          [checked]="selected.has(r.id_rol)"
-          (change)="toggle(r.id_rol, $any($event.target).checked)" />
-        <span>{{ r.nombre }}</span>
-      </label>
     </div>
   </section>
 
-  <!-- PIE -->
   <footer class="modal-foot">
-    <button
-      type="button"
-      class="btn ghost"
-      (click)="close()"
-      [disabled]="saving">
-      Cancelar
-    </button>
-
-    <button
-      type="button"
-      class="btn primary"
-      (click)="save()"
-      [disabled]="saving || loading">
-      <ng-container *ngIf="!saving; else savingTpl">
-        Asignar
-      </ng-container>
-
-      <ng-template #savingTpl>
-        <span class="btn-spinner spinner"></span>
-        Guardando…
-      </ng-template>
+    <button class="btn-cancel" (click)="close()" [disabled]="saving">Cancelar</button>
+    <button class="btn-save" (click)="save()" [disabled]="saving">
+      {{ saving ? 'Guardando...' : 'Actualizar Permisos' }}
     </button>
   </footer>
 </div>

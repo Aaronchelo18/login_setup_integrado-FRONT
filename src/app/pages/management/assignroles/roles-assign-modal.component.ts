@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UserManagementService } from '../../../core/services/management/user-management.service';
 import { UserRow } from '../../../models/user/users.model';
+import Swal from 'sweetalert2';
 
 type RoleRow = { id_rol: number; nombre: string };
 
@@ -10,6 +11,7 @@ type RoleRow = { id_rol: number; nombre: string };
   selector: 'app-roles-assign-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './roles-assign-modal.component.html',
   styleUrls: ['./roles-assign-modal.component.css']
 })
@@ -17,117 +19,87 @@ export class RolesAssignModalComponent implements OnInit {
   @Input() user!: UserRow;
   @Output() closed = new EventEmitter<boolean>();
 
-  loading = true;                 // cargando catálogo + asignados
-  saving = false;                 // guardando cambios
-  roles: RoleRow[] = [];          // todos los roles
-  selected = new Set<number>();   // ids de roles seleccionados
-  q = '';                         // filtro local
-
-  successMsg = '';                // mensaje verde
-  errorMsg = '';                  // mensaje rojo
+  saving = false;
+  roles: RoleRow[] = [];
+  selected = new Set<number>();
 
   constructor(private userSrv: UserManagementService) {}
 
   ngOnInit(): void {
-    this.init();
-  }
-
-  /** Nombre bonito del usuario */
-  displayName(u: UserRow): string {
-    if (!u) return '—';
-    if (u.display_name && u.display_name.trim()) return u.display_name.trim();
-    const parts = [u.nombre, u.paterno, u.materno]
-      .filter((x): x is string => !!x && !!x.trim());
-    return parts.length ? parts.join(' ') : '—';
-  }
-
-  init(): void {
-    this.loading = true;
-    this.successMsg = '';
-    this.errorMsg = '';
-
-    // 1) catálogo de roles: GET /api/1/roles  (UserManagementService.listR())
-    this.userSrv.listRoles().subscribe({
-      next: (res) => {
-        const all = res?.data ?? [];
-        this.roles = all.map((r) => ({
-          id_rol: Number(r.id_rol),
-          nombre: String(r.nombre ?? `Rol #${r.id_rol}`)
-        }));
-
-        // 2) roles asignados al usuario:
-        //    GET /api/managemt/users/{id_persona}/roles
-        this.userSrv.assignedToUser(this.user.id_persona).subscribe({
-          next: (res2) => {
-            const ids = (res2?.data ?? []).map((x) => Number(x.id_rol));
-            this.selected = new Set<number>(ids);
-            this.loading = false;
-          },
-          error: () => {
-            this.selected = new Set<number>();
-            this.loading = false;
-          }
-        });
-      },
-      error: () => {
-        this.roles = [];
-        this.loading = false;
-        this.errorMsg = 'No se pudo cargar el catálogo de roles.';
-      }
-    });
-  }
-
-  /** Lista de roles filtrados por q */
-  get filtered(): RoleRow[] {
-    const t = this.q.trim().toLowerCase();
-    if (!t) return this.roles;
-    return this.roles.filter(r => r.nombre.toLowerCase().includes(t));
-  }
-
-  /** Marcar / desmarcar rol */
-  toggle(id_rol: number, checked: boolean): void {
-    if (checked) {
-      this.selected.add(id_rol);
-    } else {
-      this.selected.delete(id_rol);
+    if (this.user) {
+      this.loadData();
     }
   }
 
-  /** Guardar asignación */
-  save(): void {
-    if (!this.user) return;
+  // Nombre para el mensaje de éxito (Ej: DIEGO)
+  displayFirstName(): string {
+    return this.user?.nombre?.split(' ')[0].toUpperCase() || 'USUARIO';
+  }
+
+  // Nombre completo para el encabezado
+  fullName(): string {
+    const parts = [this.user?.nombre, this.user?.paterno, this.user?.materno].filter(x => !!x);
+    return parts.join(' ');
+  }
+
+  loadData(): void {
+    // Carga inmediata de roles y asignaciones
+    this.userSrv.listRoles().subscribe(res => {
+      this.roles = res.data || [];
+    });
+
+    this.userSrv.assignedToUser(this.user.id_persona).subscribe(res => {
+      const ids = (res.data || []).map(r => Number(r.id_rol));
+      this.selected = new Set(ids);
+    });
+  }
+
+  toggle(id_rol: number): void {
+    if (this.saving) return;
+    if (this.selected.has(id_rol)) {
+      this.selected.delete(id_rol);
+    } else {
+      this.selected.add(id_rol);
+    }
+  }
+
+  async save(): Promise<void> {
+    const { isConfirmed } = await Swal.fire({
+      title: '¿Confirmar cambios?',
+      text: `Se actualizarán los roles para ${this.fullName()}`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#1b4079',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, guardar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!isConfirmed) return;
 
     this.saving = true;
-    this.successMsg = '';
-    this.errorMsg = '';
-
-    const ids = Array.from(this.selected.values());
+    const ids = Array.from(this.selected);
 
     this.userSrv.saveForUser(this.user.id_persona, ids).subscribe({
-      next: (res) => {
+      next: () => {
         this.saving = false;
-
-        if (res?.success) {
-          this.successMsg = res.message || 'Roles asignados correctamente.';
-
-          // pequeño delay para que el usuario vea el check,
-          // luego cerramos y el padre puede refrescar la lista
-          setTimeout(() => {
-            this.closed.emit(true);
-          }, 1500);
-        } else {
-          this.errorMsg = res.message || 'No se pudo guardar la asignación de roles.';
-        }
+        Swal.fire({
+          title: '¡Logrado!',
+          text: `Roles asignados a ${this.displayFirstName()}`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        this.closed.emit(true);
       },
       error: () => {
         this.saving = false;
-        this.errorMsg = 'Ocurrió un error al guardar los roles.';
+        Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
       }
     });
   }
 
-  /** Cerrar sin guardar */
-  close(): void {
-    this.closed.emit(false);
+  close() { 
+    if (!this.saving) this.closed.emit(false);
   }
 }
