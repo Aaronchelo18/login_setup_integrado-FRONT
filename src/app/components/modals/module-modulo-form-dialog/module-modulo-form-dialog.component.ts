@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ModuloCreateDTO, ModuloOption, Modulo } from '../../../models/modulo.model';
+import { ModuloOption, Modulo } from '../../../models/modulo.model';
 import { IconPickerComponent } from '../../../icon-picker/icon-picker.component';
 
 @Component({
@@ -23,7 +23,7 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
   @Input() initial: Modulo | null = null;
 
   @Output() close = new EventEmitter<void>();
-  @Output() submit = new EventEmitter<ModuloCreateDTO>();
+  @Output() submit = new EventEmitter<any>();
   @Output() onDemandParents = new EventEmitter<void>();
 
   form!: FormGroup;
@@ -46,7 +46,7 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    this.form.get('nivel')?.valueChanges.subscribe(niv => {
+    this.form.get('nivel')?.valueChanges.subscribe((niv: any) => {
       const parentCtrl = this.form.get('id_parent');
       if (Number(niv) === 0) {
         parentCtrl?.disable();
@@ -75,10 +75,7 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
     if (this.open) {
       if (this.mode === 'edit' && this.initial) {
         this.patchFromInitial(this.initial);
-        if (Number(this.initial.nivel) !== 0 && this.modules.length === 0) {
-          this.onDemandParents.emit();
-        }
-      } else if (this.mode === 'create' && ch['open']) {
+      } else if (this.mode === 'create' && ch['open']?.currentValue) {
         this.form.reset({
           nombre: '', nivel: 0, id_parent: null,
           url: '', imagen: 'material-symbols:settings-outline', estado: '1'
@@ -135,8 +132,8 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
     const val = this.form.getRawValue();
     this.submit.emit({
       ...val,
-      id_parent: val.id_parent || 0,
-      url: val.url?.trim() || null
+      id_parent: (val.id_parent === null || val.id_parent === undefined) ? 0 : Number(val.id_parent),
+      estado: String(val.estado)
     });
   }
 }

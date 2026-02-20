@@ -1,5 +1,5 @@
 <div class="mh-overlay">
-  <div class="mh-modal">
+  <div class="mh-modal" [class.blur-bg]="editingNode">
     <div class="mh-head">
       <div class="title-group">
         <div class="icon-wrapper">
@@ -45,47 +45,97 @@
     </div>
 
     <div class="mh-foot">
-      <button class="btn btn-ghost" (click)="cerrar()">Cancelar</button>
-      <button class="btn btn-primary shadow-sm" (click)="cerrar()">
-        <iconify-icon icon="lucide:check-circle"></iconify-icon>
-        <span>Guardar Cambios</span>
-      </button>
+      <button class="btn btn-ghost" (click)="cerrar()">Cerrar</button>
     </div>
   </div>
+
+  <div class="edit-drawer-overlay" *ngIf="editingNode" (click)="cancelEdit()">
+    <div class="edit-drawer" (click)="$event.stopPropagation()">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <div class="d-icon"><iconify-icon icon="lucide:edit-3"></iconify-icon></div>
+          <div *ngIf="editingNode">
+            <h4>Editar Módulo</h4>
+            <span>ID: #{{ editingNode.id_modulo }}</span>
+          </div>
+        </div>
+        <button class="btn-close-drawer" (click)="cancelEdit()">
+          <iconify-icon icon="lucide:x"></iconify-icon>
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <div class="form-group">
+          <label>Nombre del Módulo</label>
+          <input type="text" [(ngModel)]="editData.nombre" name="nombre">
+        </div>
+
+        <div class="form-group">
+          <label>Ruta / URL</label>
+          <input type="text" [(ngModel)]="editData.url" name="url">
+        </div>
+
+        <div class="form-group">
+          <label>Icono</label>
+          <div class="picker-trigger">
+            <div class="icon-preview">
+              <iconify-icon [icon]="editData.imagen"></iconify-icon>
+            </div>
+            <input type="text" [(ngModel)]="editData.imagen" name="imagen" readonly>
+            <button class="btn-picker" (click)="showIconPicker = true">
+              <iconify-icon icon="lucide:search"></iconify-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group toggle-group">
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="editData.active" name="active">
+            <span class="slider round"></span>
+          </label>
+          <div class="toggle-text">
+            <strong>Módulo Activo</strong>
+            <p>{{ editData.active ? 'Visible en menú' : 'Módulo oculto' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-footer">
+        <button class="btn btn-ghost" (click)="cancelEdit()">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveEdit()" [disabled]="loading">
+          <span>{{ loading ? 'Guardando...' : 'Guardar' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <app-icon-picker 
+    *ngIf="showIconPicker" 
+    (close)="showIconPicker = false" 
+    (pick)="onIconSelected($event)">
+  </app-icon-picker>
 </div>
 
 <ng-template #nodeItemTpl let-node>
   <li class="tree-item">
     <input *ngIf="node.children?.length" class="tgl-input" type="checkbox" [attr.id]="'t'+node.id_modulo" checked />
-    
     <div class="node-row" [class.is-inactive]="node.estado == '0'">
       <div class="node-main">
         <label *ngIf="node.children?.length" class="caret-custom" [attr.for]="'t'+node.id_modulo">
           <iconify-icon icon="lucide:chevron-right" class="caret-icon"></iconify-icon>
         </label>
-        <div *ngIf="!node.children?.length" class="caret-spacer">
-           <div class="dot-spacer"></div>
-        </div>
-
-        <iconify-icon [icon]="node.estado == '0' ? 'lucide:eye-off' : (node.children?.length ? 'lucide:folder' : 'lucide:file-code')" 
-                      class="type-icon"></iconify-icon>
-
+        <div *ngIf="!node.children?.length" class="caret-spacer"></div>
+        <iconify-icon [icon]="node.imagen || 'lucide:box'" class="type-icon"></iconify-icon>
         <div class="node-content">
           <span class="node-name">{{ node.nombre }}</span>
-          <span class="node-url" *ngIf="node.url">{{ node.url }}</span>
+          <span class="node-url">{{ node.url }}</span>
         </div>
       </div>
-
       <div class="node-actions">
-        <button class="action-btn edit" (click)="editNode(node)" title="Editar">
-          <iconify-icon icon="lucide:edit-3"></iconify-icon>
-        </button>
-        <button class="action-btn delete" (click)="remove(node)" title="Eliminar">
-          <iconify-icon icon="lucide:trash"></iconify-icon>
-        </button>
+        <button class="action-btn edit" (click)="editNode(node)"><iconify-icon icon="lucide:edit-3"></iconify-icon></button>
+        <button class="action-btn delete" (click)="remove(node)"><iconify-icon icon="lucide:trash"></iconify-icon></button>
       </div>
     </div>
-
     <ul class="tree-branch" *ngIf="node.children?.length">
       <ng-container *ngFor="let child of node.children; trackBy: trackById">
         <ng-container *ngTemplateOutlet="nodeItemTpl; context: {$implicit: child}"></ng-container>

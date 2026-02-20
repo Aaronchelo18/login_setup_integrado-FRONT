@@ -8,14 +8,16 @@ import {
   CUSTOM_ELEMENTS_SCHEMA 
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms'; 
 import { finalize } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { ModuleHierarchyService, ModuleNode } from '../../core/services/module-hierarchy.service';
+import { IconPickerComponent } from '../../icon-picker/icon-picker.component';
 
 @Component({
   selector: 'app-modules-hierarchy-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, IconPickerComponent],
   templateUrl: './modules-hierarchy-modal.component.html',
   styleUrls: ['./modules-hierarchy-modal.component.scss'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
@@ -30,6 +32,16 @@ export class ModulesHierarchyModalComponent implements OnChanges {
   loading = false;
   error = '';
   tree: ModuleNode[] = [];
+
+  // Propiedades para el control de edición (CORREGIDO)
+  editingNode: ModuleNode | null = null;
+  showIconPicker = false;
+  editData = {
+    nombre: '',
+    url: '',
+    imagen: 'lucide:box',
+    active: true
+  };
 
   constructor(private api: ModuleHierarchyService) {}
 
@@ -56,101 +68,96 @@ export class ModulesHierarchyModalComponent implements OnChanges {
       });
   }
 
-  private getFormHtml(node?: Partial<ModuleNode>): string {
-    return `
-      <div class="swal-custom-form" style="text-align:left; font-family: 'Inter', sans-serif;">
-        <div style="margin-bottom: 12px;">
-          <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:5px;">Nombre del Módulo</label>
-          <input id="sw-nombre" class="swal2-input" style="width:100%; margin:0; font-size:14px; height:38px;" value="${node?.nombre || ''}" placeholder="Ej. Reportes de Ventas">
-        </div>
-        <div style="margin-bottom: 12px;">
-          <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:5px;">Ruta / URL</label>
-          <input id="sw-url" class="swal2-input" style="width:100%; margin:0; font-size:14px; height:38px;" value="${node?.url || ''}" placeholder="/ventas/reportes">
-        </div>
-        <div style="margin-bottom: 12px;">
-          <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:5px;">Icono (Iconify)</label>
-          <input id="sw-img" class="swal2-input" style="width:100%; margin:0; font-size:14px; height:38px;" value="${node?.imagen || 'lucide:box'}" placeholder="lucide:box">
-        </div>
-        <div style="display:flex; align-items:center; gap:10px; padding-top:8px;">
-          <label class="swal-switch" style="position:relative; display:inline-block; width:34px; height:20px;">
-            <input type="checkbox" id="sw-estado" ${node?.estado !== '0' ? 'checked' : ''} style="opacity:0; width:0; height:0;">
-            <span class="slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:34px;"></span>
-          </label>
-          <span style="font-size:13px; font-weight:500; color:#1e293b;">Módulo Activo</span>
-        </div>
-        <style>
-          .swal2-input:focus { border-color: #2563eb !important; box-shadow: 0 0 0 2px rgba(37,99,235,0.1) !important; }
-          #sw-estado:checked + .slider { background-color: #2563eb; }
-          .slider:before { position:absolute; content:''; height:14px; width:14px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%; }
-          #sw-estado:checked + .slider:before { transform: translateX(14px); }
-        </style>
-      </div>
-    `;
-  }
+  // --- MÉTODOS DE EDICIÓN ---
 
   editNode(node: ModuleNode): void {
-    Swal.fire({
-      title: 'Editar Módulo',
-      html: this.getFormHtml(node),
-      showCancelButton: true,
-      confirmButtonText: 'Actualizar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#2563eb',
-      reverseButtons: true,
-      preConfirm: () => {
-        const nombre = (document.getElementById('sw-nombre') as HTMLInputElement).value.trim();
-        if (!nombre) return Swal.showValidationMessage('El nombre es obligatorio');
-        return {
-          nombre: nombre,
-          url: (document.getElementById('sw-url') as HTMLInputElement).value.trim() || null,
-          imagen: (document.getElementById('sw-img') as HTMLInputElement).value.trim() || 'lucide:box',
-          estado: (document.getElementById('sw-estado') as HTMLInputElement).checked ? '1' : '0'
-        };
-      }
-    }).then(res => {
-      if (!res.isConfirmed) return;
-      this.loading = true;
-      this.api.patchNode(node.id_modulo, res.value).pipe(finalize(() => this.loading = false)).subscribe({
-        next: () => { this.toastOk('Cambios guardados'); this.reload(); this.saved.emit(); },
+    this.editingNode = node;
+    this.editData = {
+      nombre: node.nombre,
+      url: node.url || '',
+      imagen: node.imagen || 'lucide:box',
+      active: node.estado !== '0'
+    };
+  }
+
+  cancelEdit(): void {
+    this.editingNode = null;
+    this.showIconPicker = false;
+  }
+
+  onIconSelected(icon: string): void {
+    this.editData.imagen = icon;
+    this.showIconPicker = false;
+  }
+
+  saveEdit(): void {
+    if (!this.editData.nombre.trim() || !this.editingNode) return;
+
+    // Casting de estado para cumplir con el tipo "0" | "1"
+    const estadoValue: "0" | "1" = this.editData.active ? "1" : "0";
+
+    const payload = {
+      nombre: this.editData.nombre.trim(),
+      url: this.editData.url.trim() || null,
+      imagen: this.editData.imagen,
+      estado: estadoValue
+    };
+
+    this.loading = true;
+    this.api.patchNode(this.editingNode.id_modulo, payload)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: () => {
+          this.toastOk('Módulo actualizado');
+          this.editingNode = null;
+          this.reload();
+          this.saved.emit();
+        },
         error: err => this.alertError(err, 'No se pudo actualizar'),
       });
-    });
   }
 
   remove(node: ModuleNode): void {
     Swal.fire({
       title: '¿Confirmar eliminación?',
-      html: `Estás por eliminar <b>${node.nombre}</b>.<br><small style="color:#ef4444">Esta acción afectará a todos los sub-módulos dependientes.</small>`,
+      html: `Estás por eliminar <b>${node.nombre}</b>.`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Mantener',
+      cancelButtonText: 'Cancelar',
       confirmButtonColor: '#ef4444',
       reverseButtons: true
     }).then(r => {
       if (!r.isConfirmed) return;
       this.loading = true;
-      this.api.deleteNode(node.id_modulo).pipe(finalize(() => this.loading = false)).subscribe({
-        next: () => { this.toastOk('Módulo eliminado'); this.reload(); this.saved.emit(); },
+      this.api.deleteNode(node.id_modulo).pipe(finalize(() => (this.loading = false))).subscribe({
+        next: () => { 
+          this.toastOk('Módulo eliminado'); 
+          this.reload(); 
+          this.saved.emit(); 
+        },
         error: err => this.alertError(err, 'No se pudo eliminar'),
       });
     });
   }
 
-  cerrar(): void { this.closed.emit(); }
+  cerrar(): void { 
+    this.closed.emit(); 
+  }
+
   trackById = (_: number, n: ModuleNode) => n.id_modulo;
 
   private toastOk(title: string): void {
     Swal.fire({ 
       toast: true, position: 'top-end', icon: 'success', title, 
-      showConfirmButton: false, timer: 2000, background: '#fff', color: '#1e293b'
+      showConfirmButton: false, timer: 2000 
     });
   }
 
   private alertError(err: any, fallback: string): void {
     Swal.fire({ 
       icon: 'error', title: 'Operación fallida', 
-      text: err?.error?.message || fallback, confirmButtonColor: '#2563eb'
+      text: err?.error?.message || fallback
     });
   }
 }

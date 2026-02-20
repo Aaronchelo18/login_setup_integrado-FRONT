@@ -14,52 +14,51 @@ export interface ModuleNode {
   children: ModuleNode[];
 }
 
-export interface CreateNodeDto {
-  parent_id: number;
-  nombre: string;
-  url?: string | null;
-  imagen?: string | null;
-  estado?: '0' | '1';
-}
-
 export interface UpdateNodeDto {
   nombre?: string;
   url?: string | null;
   imagen?: string | null;
   estado?: '0' | '1';
-  parent_id?: number;
+  id_parent?: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ModuleHierarchyService {
+  // AJUSTADO: Ahora coincide con el prefijo 'application-management' de tu api.php
   private base =
     `${(environment as any)?.apiUrl?.code5 ?? 'http://localhost:5017'}`
-      .replace(/\/+$/, '') + `/api/config/setup/modulos/jerarquia`;
+      .replace(/\/+$/, '') + `/api/application-management/modules/jerarquia`;
 
   constructor(private http: HttpClient) {}
 
   /** GET /jerarquia/tree */
-// Asegúrate de que el mapping de la respuesta coincida con tu estructura de Laravel
-getTree(opts?: { root_id?: number; include_inactives?: boolean }): Observable<ModuleNode[]> {
+  getTree(opts?: { root_id?: number; include_inactives?: boolean }): Observable<ModuleNode[]> {
     let params = new HttpParams();
     if (opts?.root_id != null) params = params.set('root_id', String(opts.root_id));
-    // Importante: Laravel suele esperar 1 o 0 para booleanos en query params
     if (opts?.include_inactives != null) params = params.set('include_inactives', opts.include_inactives ? '1' : '0');
     
     return this.http
       .get<any>(`${this.base}/tree`, { params })
-      .pipe(map(r => r.data || r)); // Soporte para r.data o respuesta directa
-}
+      .pipe(map(r => r.data || r));
+  }
 
   /** POST /jerarquia */
-  createNode(body: CreateNodeDto) { return this.http.post(`${this.base}`, body); }
+  createNode(body: any): Observable<any> { 
+    return this.http.post(`${this.base}`, body); 
+  }
 
   /** PUT /jerarquia/:id */
-  putNode(id: number, body: Required<UpdateNodeDto>) { return this.http.put(`${this.base}/${id}`, body); }
+  putNode(id: number, body: UpdateNodeDto): Observable<any> { 
+    return this.http.put(`${this.base}/${id}`, body); 
+  }
 
   /** PATCH /jerarquia/:id */
-  patchNode(id: number, body: UpdateNodeDto) { return this.http.patch(`${this.base}/${id}`, body); }
+  patchNode(id: number, body: UpdateNodeDto): Observable<any> { 
+    return this.http.patch(`${this.base}/${id}`, body); 
+  }
 
   /** DELETE /jerarquia/:id */
-  deleteNode(id: number) { return this.http.delete(`${this.base}/${id}`); }
+  deleteNode(id: number): Observable<any> { 
+    return this.http.delete(`${this.base}/${id}`); 
+  }
 }

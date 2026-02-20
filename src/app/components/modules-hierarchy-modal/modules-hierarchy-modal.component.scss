@@ -10,7 +10,8 @@ $bg-modal: #ffffff;
 
 .mh-overlay {
   position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
-  display: flex; align-items: center; justify-content: center; z-index: 9999;
+  display: flex; align-items: center; justify-content: center; 
+  z-index: 10000; // Aseguramos que esté sobre el contenido base
   backdrop-filter: blur(2px);
 }
 
@@ -18,7 +19,9 @@ $bg-modal: #ffffff;
   width: 95%; max-width: 600px; height: 80vh; max-height: 700px;
   background: $bg-modal; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
   display: flex; flex-direction: column; overflow: hidden;
+  position: relative; z-index: 10001;
   animation: modalEnter 0.15s ease-out;
+  &.blur-bg { filter: blur(4px); pointer-events: none; }
 }
 
 @keyframes modalEnter {
@@ -91,33 +94,64 @@ $bg-modal: #ffffff;
   &.edit { color: $primary; } &.delete { color: $danger; }
 }
 
-/* PIE Y BOTONES */
-.mh-foot {
-  padding: 16px 20px; border-top: 1px solid $border-color;
-  display: flex; justify-content: flex-end; gap: 10px; background: #fff;
+/* DRAWER (EDICIÓN) */
+.edit-drawer-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.2);
+  z-index: 10100; display: flex; justify-content: flex-end;
 }
+.edit-drawer {
+  width: 380px; background: white; height: 100%; box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+  display: flex; flex-direction: column; animation: slideIn 0.3s ease;
+}
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+.drawer-header {
+  padding: 20px; border-bottom: 1px solid $border-color; display: flex; justify-content: space-between;
+  .drawer-title {
+    display: flex; gap: 12px;
+    .d-icon { width: 36px; height: 36px; background: $primary-light; color: $primary; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    h4 { margin: 0; font-size: 15px; color: $text-main; }
+    span { font-size: 11px; color: $text-muted; font-family: monospace; }
+  }
+}
+
+.drawer-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 18px; }
+
+.form-group {
+  display: flex; flex-direction: column; gap: 6px;
+  label { font-size: 12px; font-weight: 700; color: $text-main; }
+  input { padding: 10px 12px; border: 1.5px solid $border-color; border-radius: 8px; font-size: 14px; transition: 0.2s; &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px $primary-light; } }
+}
+
+.picker-trigger {
+  display: flex; gap: 8px; align-items: center;
+  .icon-preview { width: 42px; height: 42px; background: #f8fafc; border: 1.5px solid $border-color; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: $text-main; }
+  input { flex: 1; background: #f8fafc; }
+  .btn-picker { height: 42px; width: 42px; border: 1.5px solid $border-color; border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: $primary; &:hover { background: $primary-light; border-color: $primary; } }
+}
+
+.switch {
+  position: relative; display: inline-block; width: 40px; height: 22px;
+  input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; &:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; } }
+  input:checked + .slider { background: $success; }
+  input:checked + .slider:before { transform: translateX(18px); }
+}
+.toggle-group { flex-direction: row !important; align-items: center; gap: 15px; padding: 12px; background: #f8fafc; border-radius: 10px; }
+
+.drawer-footer { padding: 20px; border-top: 1px solid $border-color; display: flex; gap: 10px; .btn { flex: 1; justify-content: center; } }
+
+/* PIE Y BOTONES */
+.mh-foot { padding: 16px 20px; border-top: 1px solid $border-color; display: flex; justify-content: flex-end; gap: 10px; background: #fff; }
 
 .btn {
   padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
   display: inline-flex; align-items: center; gap: 8px; border: 1px solid transparent; transition: 0.2s;
-  
-  &-primary { 
-    background: $primary; color: white; border-color: $primary;
-    &:hover { background: $primary-dark; }
-  }
-  &-ghost { 
-    background: white; color: $text-muted; border-color: #e2e8f0;
-    &:hover { background: #f8fafc; color: $text-main; }
-  }
+  &-primary { background: $primary; color: white; border-color: $primary; &:hover { background: $primary-dark; } }
+  &-ghost { background: white; color: $text-muted; border-color: #e2e8f0; &:hover { background: #f8fafc; color: $text-main; } }
 }
 
-.skeleton-tree {
-  .sk-item { height: 35px; background: #f1f5f9; margin-bottom: 10px; border-radius: 6px; animation: pulse 1.5s infinite; }
-}
+.skeleton-tree { .sk-item { height: 35px; background: #f1f5f9; margin-bottom: 10px; border-radius: 6px; animation: pulse 1.5s infinite; } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-.empty-state {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0;
-  color: #cbd5e1; font-size: 40px;
-  p { font-size: 14px; color: #94a3b8; margin-top: 10px; }
-}
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; color: #cbd5e1; font-size: 40px; p { font-size: 14px; color: #94a3b8; margin-top: 10px; } }
