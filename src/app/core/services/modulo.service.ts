@@ -43,8 +43,10 @@ export class ModuloService {
     );
   }
 
-  /** ===== MÉTODOS DE MÓDULOS ===== */
+  /** ===== MÉTODOS DE MÓDULOS (ADMINISTRACIÓN SIN FILTROS) ===== */
+  
   getModulosAdmin(): Observable<Modulo[]> {
+    // CRUD Administrativo: Lista completa sin restricciones de persona
     const url = `${this.baseAppManag}/modules/admin-list`; 
     return this.http.get<any>(url).pipe(
       map(r => r.data || []),
@@ -55,23 +57,8 @@ export class ModuloService {
     );
   }
 
-  getModulos(opts?: { id_persona?: number | null, force?: boolean }): Observable<Modulo[]> {
-    let params = new HttpParams();
-    if (opts?.id_persona) params = params.set('id_persona', opts.id_persona.toString());
-    return this.http.get<any>(`${this.baseAppManag}/modules`, { params }).pipe(
-      map(r => r.data || r),
-      catchError(() => of([]))
-    );
-  }
+  /** ===== OPERACIONES CRUD COMPLETAS ===== */
 
-  getOptions(include_inactives = true): Observable<ModuloOption[]> {
-    return this.silentHttp.get<any>(`${this.baseAppManag}/modules/opciones?include_inactives=${include_inactives}`).pipe(
-      map(r => r.data || r), 
-      catchError(() => of([]))
-    );
-  }
-
-  /** ===== OPERACIONES CRUD (Actualizan el caché) ===== */
   create(data: any): Observable<any> {
     return this.http.post(`${this.baseAppManag}/modules`, data).pipe(
       tap(() => this.invalidateCache())
@@ -90,22 +77,40 @@ export class ModuloService {
     );
   }
 
+  /** ===== MÉTODOS DE MÓDULOS (VISTA DE USUARIO CON ID_PERSONA) ===== */
+
+  getModulos(opts?: { id_persona?: number | null, force?: boolean }): Observable<Modulo[]> {
+    let params = new HttpParams();
+    if (opts?.id_persona) params = params.set('id_persona', opts.id_persona.toString());
+    
+    return this.http.get<any>(`${this.baseAppManag}/modules`, { params }).pipe(
+      map(r => r.data || r),
+      catchError(() => of([]))
+    );
+  }
+
+  getOptions(include_inactives = true): Observable<ModuloOption[]> {
+    return this.silentHttp.get<any>(`${this.baseAppManag}/modules/opciones?include_inactives=${include_inactives}`).pipe(
+      map(r => r.data || r), 
+      catchError(() => of([]))
+    );
+  }
+
   /** ===== OBTENCIÓN DE PADRES (Con Caché Instantáneo) ===== */
   getPadres(force = false): Observable<any[]> {
-    // Si ya hay datos y no forzamos, entregamos lo que tenemos
     if (!force && this.padresCache$.value) {
       return of(this.padresCache$.value);
     }
 
     return this.http.get<any>(`${this.baseAppManag}/modules/arbol`).pipe(
       map(r => r.data || r),
-      tap(data => this.padresCache$.next(data)), // Guardamos en memoria
+      tap(data => this.padresCache$.next(data)),
       catchError(() => of([]))
     );
   }
 
   private invalidateCache() {
-    this.getPadres(true).subscribe(); // Refresca memoria
-    this.reloadSidebar$.next();      // Avisa al Sidebar
+    this.getPadres(true).subscribe();
+    this.reloadSidebar$.next();
   }
 }

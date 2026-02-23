@@ -3,7 +3,7 @@
     <div class="mh-head">
       <div class="title-group">
         <div class="icon-wrapper">
-          <iconify-icon icon="lucide:layout-tree"></iconify-icon>
+          <iconify-icon [icon]="(tree && tree.length > 0) ? tree[0].imagen : 'lucide:layout-tree'"></iconify-icon>
         </div>
         <div class="text-wrapper">
           <h3>{{ titulo }}</h3>
@@ -53,7 +53,9 @@
     <div class="edit-drawer" (click)="$event.stopPropagation()">
       <div class="drawer-header">
         <div class="drawer-title">
-          <div class="d-icon"><iconify-icon icon="lucide:edit-3"></iconify-icon></div>
+          <div class="d-icon">
+            <iconify-icon [icon]="editData.imagen || 'lucide:edit-3'"></iconify-icon>
+          </div>
           <div *ngIf="editingNode">
             <h4>Editar Módulo</h4>
             <span>ID: #{{ editingNode.id_modulo }}</span>

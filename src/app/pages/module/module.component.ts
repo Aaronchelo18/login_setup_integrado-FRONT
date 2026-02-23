@@ -39,7 +39,6 @@ export class ModuleComponent implements OnInit {
   creating = false;
   editing = false;
 
-  // Uso de inject para consistencia
   private api = inject(ModuloService);
   private route = inject(ActivatedRoute);
   private loader = inject(LoaderService);
@@ -56,31 +55,30 @@ export class ModuleComponent implements OnInit {
   load(): void {
     this.loader.setLabel('Cargando módulos…');
     this.error = '';
+    // Llama al listado administrativo sin filtros de persona
     this.api.getModulosAdmin().subscribe({
       next: (data) => {
         this.cards = data;
-        if (this.cards.length === 0) this.error = 'No hay módulos raíz configurados.';
+        if (this.cards.length === 0) this.error = 'No hay módulos configurados.';
       },
-      error: () => this.error = 'Error de conexión con el servidor.'
+      error: () => this.error = 'Error de conexión con el servidor administrativo.'
     });
   }
 
-  /**
-   * CORRECCIÓN SOLICITADA: Redirige al dashboard de gestión de aplicaciones
-   */
   goBack(): void {
     this.router.navigate(['/app/application-management/dashboard']);
   }
 
   onCreateSubmit(p: any) {
     this.creating = true;
+    // Forzamos id_parent a 0 si viene nulo para que el backend lo tome como raíz
     const payload = { ...p, id_parent: p.id_parent || this.parentId || 0 };
     
     this.api.create(payload).pipe(finalize(() => (this.creating = false))).subscribe({
       next: () => {
         this.closeCreateModal();
         this.load();
-        Swal.fire('Creado', 'El módulo se registró con éxito', 'success');
+        Swal.fire('Éxito', 'Módulo creado correctamente', 'success');
       },
       error: (err: any) => Swal.fire('Error', err.error?.message || 'No se pudo crear', 'error')
     });
@@ -107,17 +105,14 @@ export class ModuleComponent implements OnInit {
           this.load();
           Swal.fire('Actualizado', 'Cambios guardados correctamente', 'success');
         },
-        error: (err: any) => {
-          console.error("Error detalle:", err);
-          Swal.fire('Error', err.error?.message || 'Datos inválidos', 'error');
-        }
+        error: (err: any) => Swal.fire('Error', err.error?.message || 'Error al actualizar', 'error')
       });
   }
 
   onDelete(m: Modulo) {
     Swal.fire({
       title: '¿Eliminar módulo?',
-      text: `Se eliminará: ${m.nombre}.`,
+      text: `Se eliminará permanentemente: ${m.nombre}.`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
@@ -127,23 +122,13 @@ export class ModuleComponent implements OnInit {
         this.api.remove(m.id_modulo).subscribe({
           next: () => {
             this.load();
-            Swal.fire('Eliminado', 'Módulo borrado', 'success');
+            Swal.fire('Eliminado', 'Módulo borrado con éxito', 'success');
           },
           error: (err: any) => Swal.fire('Error', err.error?.message || 'No se puede eliminar', 'error')
         });
       }
     });
   }
-
-  // Helpers de UI
-  iconType(icon?: string | null) { 
-    return icon?.includes(':') ? 'iconify' : icon?.match(/\.(png|jpg|jpeg|svg|webp)$/i) ? 'img' : 'none'; 
-  }
-  iconUrl(icon?: string | null) { 
-    return /^https?:\/\//i.test(icon!) ? icon! : `assets/img/${icon}`; 
-  }
-  firstLetter = (n?: string | null) => (n || 'M').trim().charAt(0).toUpperCase();
-  trackById = (_: number, m: Modulo) => m.id_modulo;
 
   fetchParents() {
     if (this.loadingParents) return;
@@ -154,25 +139,21 @@ export class ModuleComponent implements OnInit {
     });
   }
 
-  // Control de Modales
+  // Helpers de UI y Modales
+  iconType(icon?: string | null) { return icon?.includes(':') ? 'iconify' : icon?.match(/\.(png|jpg|jpeg|svg|webp)$/i) ? 'img' : 'none'; }
+  iconUrl(icon?: string | null) { return /^https?:\/\//i.test(icon!) ? icon! : `assets/img/${icon}`; }
+  firstLetter = (n?: string | null) => (n || 'M').trim().charAt(0).toUpperCase();
+  trackById = (_: number, m: Modulo) => m.id_modulo;
+
   openCreateModal() { this.openCreate = true; this.toggleBodyScroll(true); this.fetchParents(); }
   closeCreateModal() { this.openCreate = false; this.toggleBodyScroll(false); }
-  
   openEditModal(m: Modulo) { this.selectedMod = m; this.openEdit = true; this.toggleBodyScroll(true); this.fetchParents(); }
   closeEditModal() { this.openEdit = false; this.toggleBodyScroll(false); }
-  
   openPrivileges(m: Modulo) { this.selectedMod = m; this.showPriv = true; this.toggleBodyScroll(true); }
   closePriv() { this.showPriv = false; this.toggleBodyScroll(false); }
-  
-  openHierarchy(m: Modulo) { 
-    this.selectedMod = m; 
-    this.openHier = true; 
-    this.toggleBodyScroll(true); 
-  }
+  openHierarchy(m: Modulo) { this.selectedMod = m; this.openHier = true; this.toggleBodyScroll(true); }
   closeHierarchy() { this.openHier = false; this.toggleBodyScroll(false); }
-
   refreshAfterSave() { this.closePriv(); this.load(); }
   onHierarchySaved() { this.load(); }
-  
   private toggleBodyScroll(lock: boolean) { document.body.style.overflow = lock ? 'hidden' : ''; }
 }
