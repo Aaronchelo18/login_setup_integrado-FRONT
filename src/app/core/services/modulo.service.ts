@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpBackend } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject, of, BehaviorSubject } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -7,83 +7,118 @@ import { Modulo, ModuloOption } from '../../models/modulo.model';
 
 @Injectable({ providedIn: 'root' })
 export class ModuloService {
-  // Aseguramos que la URL no termine en slash para concatenar limpio
   private apiRoot = (environment?.apiUrl?.code5 || 'http://localhost:5017').replace(/\/+$/, '');
   private baseAppManag = `${this.apiRoot}/api/application-management`;
   private baseIam = `${this.apiRoot}/api/iam`;
   
   readonly reloadSidebar$ = new Subject<void>();
-  private silentHttp: HttpClient;
-  private padresCache$ = new BehaviorSubject<any[] | null>(null);
+  
+  // Cache para carga instantánea de la lista administrativa
+  private _modulesAdmin$ = new BehaviorSubject<Modulo[]>([]);
+  // Cache para el árbol de padres (usado en sidebar/selects)
+  private _padresCache$ = new BehaviorSubject<any[] | null>(null);
 
-  constructor(private http: HttpClient, handler: HttpBackend) {
-    this.silentHttp = new HttpClient(handler);
+  constructor(private http: HttpClient) {}
+
+  /** * GETTER para los módulos en caché (Carga ultra rápida)
+   */
+  get modules$() {
+    return this._modulesAdmin$.asObservable();
   }
 
-  /** KPIs Dashboard */
+  /** KPIs Dashboard (Recuperados) */
   getStatsRoles(): Observable<any[]> {
-    return this.http.get<any>(`${this.baseIam}/roles`).pipe(map(r => r.data || r || []), catchError(() => of([])));
+    return this.http.get<any>(`${this.baseIam}/roles`).pipe(
+      map(r => r.data || r || []), 
+      catchError(() => of([]))
+    );
   }
+
   getStatsUsers(): Observable<any[]> {
-    return this.http.get<any>(`${this.baseIam}/role-assignment/users`).pipe(map(r => r.data || r || []), catchError(() => of([])));
+    return this.http.get<any>(`${this.baseIam}/role-assignment/users`).pipe(
+      map(r => r.data || r || []), 
+      catchError(() => of([]))
+    );
   }
+
   getStatsAccesos(): Observable<any[]> {
-    return this.http.get<any>(`${this.baseIam}/user-access/reports`).pipe(map(r => r.data || r || []), catchError(() => of([])));
+    return this.http.get<any>(`${this.baseIam}/user-access/reports`).pipe(
+      map(r => r.data || r || []), 
+      catchError(() => of([]))
+    );
   }
 
   /** CRUD ADMIN */
   getModulosAdmin(): Observable<Modulo[]> {
-    return this.http.get<any>(`${this.baseAppManag}/modules/admin-list`).pipe(map(r => r.data || []), catchError(() => of([])));
+    return this.http.get<any>(`${this.baseAppManag}/modules/admin-list`).pipe(
+      map(r => r.data || []),
+      tap(data => this._modulesAdmin$.next(data)),
+      catchError(() => {
+        this._modulesAdmin$.next([]);
+        return of([]);
+      })
+    );
   }
 
-  /** * POST DEFINITIVO: URL limpia según tu prueba exitosa 
-   */
-create(data: any): Observable<any> {
-  const url = `${this.baseAppManag}/modules/store-basic`;
-
-  // 🔥 Solo enviamos lo que el backend espera
-  const payload = {
-    nombre: data.nombre,
-    id_parent: Number(data.id_parent ?? 0)
-  };
-
-  return this.http.post(url, payload, {
-    headers: { 'Content-Type': 'application/json' }
-  }).pipe(
-    tap(() => this.invalidateCache())
-  );
-}
+  create(data: any): Observable<any> {
+    const url = `${this.baseAppManag}/modules/store-basic`;
+    return this.http.post(url, data).pipe(
+      tap(() => this.refreshAll())
+    );
+  }
 
   update(id: number, data: any): Observable<any> {
     return this.http.put(`${this.baseAppManag}/modules/${id}`, data).pipe(
-      tap(() => this.invalidateCache())
+      tap(() => this.refreshAll())
     );
   }
 
   remove(id: number): Observable<any> {
     return this.http.delete(`${this.baseAppManag}/modules/${id}`).pipe(
-      tap(() => this.invalidateCache())
+      tap(() => {
+        // Borrado optimista en la lista local
+        const current = this._modulesAdmin$.value.filter(m => m.id_modulo !== id);
+        this._modulesAdmin$.next(current);
+        this.refreshAll();
+      })
     );
   }
 
-  /** VISTAS Y OPCIONES */
+  /** MÉTODOS REQUERIDOS POR SIDEBAR Y SETUP (Recuperados) */
+  
   getModulos(opts?: { id_persona?: number | null, force?: boolean }): Observable<Modulo[]> {
     let params = new HttpParams();
     if (opts?.id_persona) params = params.set('id_persona', opts.id_persona.toString());
-    return this.http.get<any>(`${this.baseAppManag}/modules`, { params }).pipe(map(r => r.data || r), catchError(() => of([])));
+    
+    return this.http.get<any>(`${this.baseAppManag}/modules`, { params }).pipe(
+      map(r => r.data || r),
+      catchError(() => of([]))
+    );
+  }
+
+  getPadres(force = false): Observable<any[]> {
+    if (!force && this._padresCache$.value) return of(this._padresCache$.value);
+    
+    return this.http.get<any>(`${this.baseAppManag}/modules/arbol`).pipe(
+      map(r => r.data || r),
+      tap(data => this._padresCache$.next(data)),
+      catchError(() => of([]))
+    );
   }
 
   getOptions(include_inactives = true): Observable<ModuloOption[]> {
     const url = `${this.baseAppManag}/modules/opciones?include_inactives=${include_inactives}`;
-    return this.silentHttp.get<any>(url).pipe(map(r => r.data || r), catchError(() => of([])));
+    return this.http.get<any>(url).pipe(
+      map(r => r.data || r),
+      catchError(() => of([]))
+    );
   }
 
-  getPadres(force = false): Observable<any[]> {
-    if (!force && this.padresCache$.value) return of(this.padresCache$.value);
-    return this.http.get<any>(`${this.baseAppManag}/modules/arbol`).pipe(map(r => r.data || r), tap(data => this.padresCache$.next(data)), catchError(() => of([])));
-  }
-
-  private invalidateCache() {
+  /**
+   * Refresca las caches en segundo plano
+   */
+  private refreshAll() {
+    this.getModulosAdmin().subscribe();
     this.getPadres(true).subscribe();
     this.reloadSidebar$.next();
   }

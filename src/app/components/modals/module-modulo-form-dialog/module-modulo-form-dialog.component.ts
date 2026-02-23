@@ -17,7 +17,7 @@ import { IconPickerComponent } from '../../../icon-picker/icon-picker.component'
 export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
   @Input() open = false;
   @Input() modules: ModuloOption[] = [];
-  @Input() creating = false;
+  @Input() creating = false; // Este Input controla el loading del botón
   @Input() loading = false;
   @Input() mode: 'create' | 'edit' = 'create';
   @Input() initial: Modulo | null = null;
@@ -125,20 +125,20 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
     this.showIconPicker = false; 
   }
   
-  onCancel() { this.close.emit(); }
+  onCancel() { if (!this.creating) this.close.emit(); }
 
-onSave() {
-  if (this.form.invalid) return;
+  onSave() {
+    if (this.form.invalid || this.creating) return;
 
-  const val = this.form.getRawValue();
+    const val = this.form.getRawValue();
 
-  this.save.emit({
-    nombre: val.nombre,
-    url: val.url || '',
-    imagen: val.imagen || '',
-    estado: String(val.estado ?? '1'),
-    nivel: Number(val.nivel ?? 0),
-    id_parent: Number(val.id_parent ?? 0)
-  });
-}
+    this.save.emit({
+      nombre: val.nombre,
+      url: val.url || '',
+      imagen: val.imagen || '',
+      estado: String(val.estado ?? '1'),
+      nivel: Number(val.nivel ?? 0),
+      id_parent: Number(val.id_parent ?? 0)
+    });
+  }
 }

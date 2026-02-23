@@ -6,7 +6,7 @@
         <h3>{{ mode === 'create' ? 'Crear Nuevo Módulo' : 'Editar Configuración' }}</h3>
         <p class="head-subtitle">Gestiona la jerarquía y visualización del acceso</p>
       </div>
-      <button type="button" class="dlg-close" (click)="onCancel()">
+      <button type="button" class="dlg-close" (click)="onCancel()" [disabled]="creating">
         <iconify-icon icon="heroicons:x-mark-20-solid" width="20"></iconify-icon>
       </button>
     </header>
@@ -94,7 +94,7 @@
               <span class="icon-name">{{ form.get('imagen')?.value || 'default-icon' }}</span>
               <span class="icon-label">Icono de representación</span>
             </div>
-            <button type="button" class="btn-picker" (click)="openPicker()">
+            <button type="button" class="btn-picker" (click)="openPicker()" [disabled]="creating">
                 Cambiar Icono
             </button>
           </div>
@@ -103,9 +103,12 @@
       </div>
 
       <footer class="dlg-actions">
-        <button type="button" class="btn-cancel" (click)="onCancel()">Cancelar</button>
+        <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="creating">Cancelar</button>
         <button type="submit" class="btn-submit" [disabled]="creating || form.invalid">
-          {{ mode === 'edit' ? 'Actualizar Módulo' : 'Crear Módulo' }}
+          <iconify-icon *ngIf="creating" icon="lucide:loader-2" class="spinner" width="18"></iconify-icon>
+          <span>
+            {{ creating ? (mode === 'edit' ? 'Actualizando...' : 'Creando...') : (mode === 'edit' ? 'Actualizar Módulo' : 'Crear Módulo') }}
+          </span>
         </button>
       </footer>
     </form>
