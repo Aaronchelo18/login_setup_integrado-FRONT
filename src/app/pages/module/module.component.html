@@ -23,7 +23,11 @@
   </div>
 
   <div class="mod-grid">
-    <article class="mod-card" *ngFor="let m of cards; trackBy: trackById" [class.is-disabled]="m.estado == '0'">
+    <article
+      class="mod-card"
+      *ngFor="let m of cards; trackBy: trackById"
+      [class.is-disabled]="m.estado == '0'"
+    >
       <div class="card-accent"></div>
       <div class="card-inner">
         <div class="card-main-info">
@@ -37,7 +41,7 @@
 
           <div class="text-content">
             <div class="title-row">
-              <h3 class="module-name">{{ m.nombre }}</h3>
+              <h3 class="module-name">{{ m.nombre || 'Sin nombre' }}</h3>
               <span class="status-badge" [class.inactive]="m.estado == '0'">
                 {{ m.estado == "1" ? "Activo" : "Inactivo" }}
               </span>
@@ -54,15 +58,13 @@
 
         <div class="card-footer">
           <div class="quick-tools">
-            <button class="tool-btn" (click)="openEditModal(m)" title="Configuración y Edición">
+            <button class="tool-btn" (click)="openEditModal(m)" title="Configuración e Edición">
               <iconify-icon icon="lucide:settings"></iconify-icon>
             </button>
-            
             <button class="tool-btn" (click)="openHierarchy(m)" title="Estructura Jerárquica">
-              <iconify-icon icon="lucide:git-graph" style="color: #2563eb;"></iconify-icon>
+              <iconify-icon icon="lucide:git-graph" style="color: #2563eb"></iconify-icon>
             </button>
           </div>
-
           <button class="btn-privileges" (click)="openPrivileges(m)">
             <span>Gestionar Privilegios</span>
             <iconify-icon icon="lucide:chevron-right"></iconify-icon>
@@ -95,13 +97,13 @@
         mode="create"
         (onDemandParents)="fetchParents()"
         (close)="closeCreateModal()"
-        (submit)="onCreateSubmit($event)"
+        (save)="onCreateSubmit($event)"
       ></app-module-modulo-form-dialog>
     </div>
 
     <div class="modal-content" [class.active]="openEdit">
       <app-module-modulo-form-dialog
-        *ngIf="openEdit"
+        *ngIf="openEdit && selectedMod"
         [open]="openEdit"
         [modules]="parentOptions"
         [loading]="loadingParents"
@@ -110,7 +112,7 @@
         [initial]="selectedMod"
         (onDemandParents)="fetchParents()"
         (close)="closeEditModal()"
-        (submit)="onEditSubmit($event)"
+        (save)="onEditSubmit($event)"
       ></app-module-modulo-form-dialog>
     </div>
 

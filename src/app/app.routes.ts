@@ -10,7 +10,6 @@ import { RoleAccessTreePage } from './pages/setup/access/pages/role-access-tree/
 import { UsersListPage } from './pages/management/users/users-list.page';
 import { GestionAccesosComponent } from './pages/userprograma/gestion-accesos.component';
 import { AccessReportsPage } from './pages/reports/access-reports.page';
-import { DynamicPortalComponent } from './pages/portal/dynamic-portal.component';
 import { ModuleComponent } from './pages/module/module.component'; // Verifica que la ruta de importación sea correcta
 
 export const routes: Routes = [
@@ -51,7 +50,6 @@ export const routes: Routes = [
       },
 
       { path: ':module', pathMatch: 'full', redirectTo: ':module/home' },
-      { path: ':module/:page', component: DynamicPortalComponent },
     ],
   },
 

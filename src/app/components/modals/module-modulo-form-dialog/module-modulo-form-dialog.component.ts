@@ -23,7 +23,7 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
   @Input() initial: Modulo | null = null;
 
   @Output() close = new EventEmitter<void>();
-  @Output() submit = new EventEmitter<any>();
+  @Output() save = new EventEmitter<any>();
   @Output() onDemandParents = new EventEmitter<void>();
 
   form!: FormGroup;
@@ -127,13 +127,18 @@ export class ModuleModuloFormDialogComponent implements OnInit, OnChanges {
   
   onCancel() { this.close.emit(); }
 
-  onSave() {
-    if (this.form.invalid) return;
-    const val = this.form.getRawValue();
-    this.submit.emit({
-      ...val,
-      id_parent: (val.id_parent === null || val.id_parent === undefined) ? 0 : Number(val.id_parent),
-      estado: String(val.estado)
-    });
-  }
+onSave() {
+  if (this.form.invalid) return;
+
+  const val = this.form.getRawValue();
+
+  this.save.emit({
+    nombre: val.nombre,
+    url: val.url || '',
+    imagen: val.imagen || '',
+    estado: String(val.estado ?? '1'),
+    nivel: Number(val.nivel ?? 0),
+    id_parent: Number(val.id_parent ?? 0)
+  });
+}
 }

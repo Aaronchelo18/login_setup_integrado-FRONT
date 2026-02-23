@@ -24,7 +24,7 @@ import { LoaderService } from '../../shared/loading/loader.service';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ModuleComponent implements OnInit {
-  error = '';
+  error = ''; 
   cards: Modulo[] = [];
   parentId: number | null = null;
   selectedMod: Modulo | null = null;
@@ -53,15 +53,15 @@ export class ModuleComponent implements OnInit {
   }
 
   load(): void {
-    this.loader.setLabel('Cargando módulos…');
-    this.error = '';
-    // Llama al listado administrativo sin filtros de persona
     this.api.getModulosAdmin().subscribe({
       next: (data) => {
         this.cards = data;
-        if (this.cards.length === 0) this.error = 'No hay módulos configurados.';
+        this.error = data.length === 0 ? 'No hay módulos configurados.' : '';
       },
-      error: () => this.error = 'Error de conexión con el servidor administrativo.'
+      error: (err) => {
+        this.error = 'Error de conexión con el servidor.';
+        console.error(err);
+      }
     });
   }
 
@@ -70,18 +70,31 @@ export class ModuleComponent implements OnInit {
   }
 
   onCreateSubmit(p: any) {
+    const nombre = p?.nombre ?? p?.name ?? p?.modulo ?? '';
+
+    if (!nombre) {
+      Swal.fire('Error', 'El nombre del módulo es obligatorio', 'error');
+      return;
+    }
+
     this.creating = true;
-    // Forzamos id_parent a 0 si viene nulo para que el backend lo tome como raíz
-    const payload = { ...p, id_parent: p.id_parent || this.parentId || 0 };
-    
-    this.api.create(payload).pipe(finalize(() => (this.creating = false))).subscribe({
-      next: () => {
-        this.closeCreateModal();
-        this.load();
-        Swal.fire('Éxito', 'Módulo creado correctamente', 'success');
-      },
-      error: (err: any) => Swal.fire('Error', err.error?.message || 'No se pudo crear', 'error')
-    });
+    const payload = {
+      nombre: nombre,
+      id_parent: Number(p.id_parent ?? this.parentId ?? 0)
+    };
+
+    this.api.create(payload)
+      .pipe(finalize(() => (this.creating = false)))
+      .subscribe({
+        next: () => {
+          this.closeCreateModal();
+          Swal.fire('Éxito', 'Módulo creado correctamente', 'success');
+          this.load();
+        },
+        error: (err: any) => {
+          Swal.fire('Error', err?.error?.message || 'No se pudo crear', 'error');
+        }
+      });
   }
 
   onEditSubmit(p: any) {
@@ -90,41 +103,61 @@ export class ModuleComponent implements OnInit {
 
     const payload = {
       nombre: p.nombre,
-      url: p.url,
-      imagen: p.imagen,
-      estado: p.estado,
-      id_parent: p.id_parent || 0,
-      nivel: p.nivel || 0
+      url: p.url || '',
+      imagen: p.imagen || '',
+      estado: String(p.estado ?? '1'),
+      id_parent: Number(p.id_parent ?? 0),
+      nivel: Number(p.nivel ?? 0)
     };
 
     this.api.update(this.selectedMod.id_modulo, payload)
       .pipe(finalize(() => (this.editing = false)))
       .subscribe({
         next: () => {
+          // ACTUALIZACIÓN LOCAL ATÓMICA
+          const i = this.cards.findIndex(m => m.id_modulo === this.selectedMod!.id_modulo);
+          if (i !== -1) {
+            const updatedCard = { ...this.cards[i], ...payload };
+            const newCards = [...this.cards];
+            newCards[i] = updatedCard;
+            this.cards = newCards; // Dispara detección de cambios limpia
+          }
+
           this.closeEditModal();
-          this.load();
-          Swal.fire('Actualizado', 'Cambios guardados correctamente', 'success');
+          this.selectedMod = null;
+
+          Swal.fire({
+            title: 'Actualizado',
+            text: 'Cambios guardados localmente',
+            icon: 'success',
+            timer: 1000,
+            showConfirmButton: false
+          });
+
+          // Refresco silencioso opcional tras 2s
+          setTimeout(() => this.load(), 2000);
         },
-        error: (err: any) => Swal.fire('Error', err.error?.message || 'Error al actualizar', 'error')
+        error: (err: any) => {
+          Swal.fire('Error', err.error?.message || 'Error al actualizar', 'error');
+        }
       });
   }
 
   onDelete(m: Modulo) {
     Swal.fire({
       title: '¿Eliminar módulo?',
-      text: `Se eliminará permanentemente: ${m.nombre}.`,
+      text: `Se eliminará: ${m.nombre}.`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
-      confirmButtonColor: '#d33'
     }).then((res) => {
       if (res.isConfirmed) {
         this.api.remove(m.id_modulo).subscribe({
           next: () => {
             this.load();
-            Swal.fire('Eliminado', 'Módulo borrado con éxito', 'success');
+            Swal.fire('Eliminado', 'Módulo borrado', 'success');
           },
-          error: (err: any) => Swal.fire('Error', err.error?.message || 'No se puede eliminar', 'error')
+          error: (err: any) => Swal.fire('Error', err.error?.message || 'No se pudo eliminar', 'error')
         });
       }
     });
@@ -139,7 +172,6 @@ export class ModuleComponent implements OnInit {
     });
   }
 
-  // Helpers de UI y Modales
   iconType(icon?: string | null) { return icon?.includes(':') ? 'iconify' : icon?.match(/\.(png|jpg|jpeg|svg|webp)$/i) ? 'img' : 'none'; }
   iconUrl(icon?: string | null) { return /^https?:\/\//i.test(icon!) ? icon! : `assets/img/${icon}`; }
   firstLetter = (n?: string | null) => (n || 'M').trim().charAt(0).toUpperCase();
@@ -147,7 +179,7 @@ export class ModuleComponent implements OnInit {
 
   openCreateModal() { this.openCreate = true; this.toggleBodyScroll(true); this.fetchParents(); }
   closeCreateModal() { this.openCreate = false; this.toggleBodyScroll(false); }
-  openEditModal(m: Modulo) { this.selectedMod = m; this.openEdit = true; this.toggleBodyScroll(true); this.fetchParents(); }
+  openEditModal(m: Modulo) { this.selectedMod = { ...m }; this.openEdit = true; this.toggleBodyScroll(true); this.fetchParents(); }
   closeEditModal() { this.openEdit = false; this.toggleBodyScroll(false); }
   openPrivileges(m: Modulo) { this.selectedMod = m; this.showPriv = true; this.toggleBodyScroll(true); }
   closePriv() { this.showPriv = false; this.toggleBodyScroll(false); }
